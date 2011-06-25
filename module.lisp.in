@@ -23,7 +23,7 @@
 
 ;; Directories with external modules:
 ;;
-;; * $PREFIX/share
+;; * $PREFIX/share/modules
 ;; * ~/.dswm.d/modules
 ;; * user-defined-dir
 
@@ -60,18 +60,16 @@
     mod-list))
 
 (defun find-module (name)
-  "Find module from list avaliable modules
-FIXME: fucking imperative style"
-  (let ((module nil)
-	(file nil))
-    (dolist (md (reverse *list-modules-dir*))
-      (setf file
-	    (probe-file (make-pathname :defaults md
-				       :name name
-				       :type "lisp")))
-      (when file
-	  (setf module file)))
-    module))
+  "Find module from list avaliable modules FIXME: test"
+  (labels
+      ((module-p (dir-list name)
+	 (cond
+	   ((null dir-list) nil)
+	   ((file-exists-p (make-pathname :defaults (car dir-list) :name name :type "lisp"))
+	    (make-pathname :defaults (car dir-list) :name name :type "lisp"))
+	   (t (module-p (cdr dir-list) name)))))
+    (module-p (reverse *list-modules-dir*) name)))
+
 
 (defcommand add-modules-dir (dir) ((:string "Directory: "))
   ;; TODO: define dswm type pathname with autocomplete and automatic

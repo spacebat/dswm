@@ -1,0 +1,14 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "ws"]
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = ssh://work-space.org.ua/home/cosmonaut/git/dss/dswm
+[remote "gh"]
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = git@github.com:lisp-hacks/dswm.git
+[remote "sf"]
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	url = ssh://cosmonaut-ok@dswm.git.sourceforge.net/gitroot/dswm/dswm

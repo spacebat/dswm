@@ -81,8 +81,14 @@ about it."))
 (defgeneric group-root-exposure (group)
   (:documentation "The root window got an exposure event. If the group
 needs to redraw anything on it, this is where it should do it."))
-(defgeneric group-add-head (group)
-  (:documentation "A new head was added."))
+(defgeneric group-add-head (group head)
+  (:documentation "A head is being added to this group's screen."))
+(defgeneric group-remove-head (group head)
+  (:documentation "A head is being removed from this group's screen."))
+(defgeneric group-resize-head (group oh nh)
+  (:documentation "A head is being resized on this group's screen."))
+(defgeneric group-sync-all-heads (group)
+  (:documentation "Called when the head configuration for the group changes."))
 (defgeneric group-sync-head (group head)
   (:documentation "When a head or its usable area is resized, this is
 called. When the modeline size changes, this is called."))
@@ -103,6 +109,14 @@ otherwise specified."
 (defun sort-groups (screen)
   "Return a copy of the screen's group list sorted by number."
   (sort1 (screen-groups screen) '< :key 'group-number))
+
+(defun group-map-number (group)
+  (let* ((num (group-number group))
+         (index (1- (abs num))))
+    (if (and (>= index 0)
+             (< index (length *group-number-map*)))
+        (format nil "~:[~;-~]~a" (minusp num) (elt *group-number-map* index))
+        num)))
 
 (defun fmt-group-status (group)
   (let ((screen (group-screen group)))
@@ -137,8 +151,7 @@ at 0. Return a netwm compliant group id."
 (defun switch-to-group (new-group)
   (let* ((screen (group-screen new-group))
          (old-group (screen-current-group screen)))
-    (progn (setf *old-group* old-group) ;; my first variant of bydlocode
-	   (unless (eq new-group old-group)
+    (progn (unless (eq new-group old-group)
 	     ;; restore the visible windows
 	     (dolist (w (group-windows new-group))
 	       (when (eq (window-state w) +normal-state+)
@@ -280,22 +293,26 @@ Groups are known as \"virtual desktops\" in the NETWM standard."
   (check-type name string)
   (if (or (string= name "")
           (string= name ".")
+	  ;; FIXME. Groups must have numbers in its names
 	  (cl-ppcre:scan-to-strings "[0-9]" name))
-      (error "Groups must have a name and not contain numbers.")
-      (let ((ng (or (find-group screen name)
-                    (let ((ng (make-instance type
-                                             :screen screen
-                                             :number (if (char= (char name 0) #\.)
-                                                         (find-free-hidden-group-number screen)
-                                                         (find-free-group-number screen))
-                                             :name name)))
-                      (setf (screen-groups screen) (append (screen-groups screen) (list ng)))
-                      (netwm-set-group-properties screen)
-                      (netwm-update-groups screen)
-                      ng))))
-        (unless background
-          (switch-to-group ng))
-        ng)))
+      (message "^B^1*Error:^n Groups must have a name and not contain numbers.")
+    (let ((ng (or (find-group screen name)
+		  (let ((ng (make-instance type
+					   :screen screen
+					   :number (if (char= (char name 0) #\.)
+						       (find-free-hidden-group-number screen)
+						     (find-free-group-number screen))
+					   :name name)))
+		    (setf (screen-groups screen) (append (screen-groups screen) (list ng)))
+		    (netwm-set-group-properties screen)
+		    (netwm-update-groups screen)
+		    (+st
+		     (dump-to-file *window-placement-rules*
+						  (data-dir-file "windows-placement" "rules") t)) ; for session-transparent mode
+		    ng))))
+      (unless background
+	(switch-to-group ng))
+      ng)))
 
 (defun find-group (screen name)
   "Return the group with the name, NAME. Or NIL if none exists."
@@ -330,11 +347,14 @@ current group. If @var{name} begins with a dot (``.'') the group new
 group will be created in the hidden state. Hidden groups have group
 numbers less than one and are invisible to from gprev, gnext, and, optionally,
 groups and vgroups commands."
-  (add-group (current-screen) name))
+  (if (not (add-group (current-screen) name))
+      (+i (run-commands "gnew"))
+    (+st (dump-desktop))))
 
 (defcommand gnewbg (name) ((:string "Group Name: "))
   "Create a new group but do not switch to it."
-  (add-group (current-screen) name :background t))
+  (if (not (add-group (current-screen) name :background t))
+      (+i (run-commands "gnewbg"))))
 
 (defcommand gnext () ()
 "Cycle to the next group in the group list."
@@ -368,11 +388,18 @@ window along."
   "Rename the current group."
   (let ((group (current-group)))
     (cond ((find-group (current-screen) name)
-           (message "^1*^BError: Name already exists"))
+           (message (concat "^Name already exists."
+			  (+i (format nil "Rename to another name"))))
+	   (+i (run-commands "grename")))
           ((or (zerop (length name))
                (string= name ".")
+	       ;; FIXME groups must have possibility to include
+	       ;; numbers here
 	       (cl-ppcre:scan-to-strings "[0-9]" name))
-           (message "^1*^BError: empty name or name with numbers"))
+	   (progn
+	     (error (concat "Empty name or name with numbers"
+			    (+i (format nil "Rename to another name"))))
+	     (+i (run-commands "grename"))))
           (t
            (cond ((and (char= (char name 0) #\.) ;change to hidden group
                        (not (char= (char (group-name group) 0) #\.)))
@@ -381,9 +408,6 @@ window along."
                        (char= (char (group-name group) 0) #\.))
                   (setf (group-number group) (find-free-group-number (current-screen)))))
            (setf (group-name group) name)))))
-
-;; Emacs-like
-(defcommand-alias grename rename-groupи)
 
 (defun echo-groups (screen fmt &optional verbose (wfmt *window-format*))
   "Print a list of the windows to the screen."
@@ -400,12 +424,12 @@ window along."
                         (if *list-hidden-groups* groups (non-hidden-groups groups)))))
     (echo-string-list screen names)))
 
-(defcommand groups (&optional (fmt *group-format*)) (:rest)
-"Display the list of groups with their number and
-name. @var{*group-format*} controls the formatting. The optional
-argument @var{fmt} can be used to override the default group
-formatting."
-  (echo-groups (current-screen) fmt))
+;; (defcommand groups (&optional (fmt *group-format*)) (:rest)
+;; "Display the list of groups with their number and
+;; name. @var{*group-format*} controls the formatting. The optional
+;; argument @var{fmt} can be used to override the default group
+;; formatting."
+;;   (echo-groups (current-screen) fmt))
 
 (defcommand vgroups (&optional gfmt wfmt) (:string :rest)
 "Like @command{groups} but also display the windows in each group. The
@@ -430,12 +454,14 @@ the default group formatting and window formatting, respectively."
 			 (current-screen)
 			 (mapcar (lambda (g)
 				   (list (format-expand *group-formatters* fmt g) g))
-				 ;; Emacs-like menu
 				 (cons (cadr sgs)
 				       (cons (car sgs)
 					     (cddr sgs))))))))
     (when group
       (switch-to-group group))))
+
+;; To Command groups is deprecated as not functional (experimental change)
+(defcommand-alias groups grouplist)
 
 (defcommand gmove (to-group) ((:group "To Group: "))
 "Move the current window to the specified group."
@@ -450,6 +476,14 @@ the default group formatting and window formatting, respectively."
       (dolist (i (marked-windows group))
         (setf (window-marked i) nil)
         (move-window-to-group i to-group)))))
+
+;; Experimental
+(defcommand gmove-new (groupname) ((:string "Enter groupname: "))
+  "Run shell command in new float group with same name with command"
+  (check-type groupname string)
+  (gnewbg groupname)
+  (gmove groupname))
+;; /Experimental
 
 (defcommand gkill () ()
 "Kill the current group. All windows in the current group are migrated
@@ -469,6 +503,7 @@ The windows will be moved to group \"^B^2*~a^n\"
             (progn
               (switch-to-group to-group)
               (kill-group dead-group to-group)
+	      (+st (dump-desktop))
               (message "Deleted"))
             (message "Canceled"))
         (message "There's only one group left"))))
@@ -476,5 +511,24 @@ The windows will be moved to group \"^B^2*~a^n\"
 (defcommand gmerge (from) ((:group "From Group: "))
 "Merge @var{from} into the current group. @var{from} is not deleted."
   (if (eq from (current-group))
-      (message "^B^3*Cannot merge group with itself!")
+      (progn
+	(message (concat "^B^3*Cannot merge group with itself!"
+			 (+i (format nil "Try merge with another group"))))
+	(+i (run-commands "gmerge")))
       (merge-groups from (current-group))))
+
+;; Experimental
+(defcommand grun (command group) ((:shell "Enter command to run program: ")
+				  (:group "In what group? "))
+  "Run shell command in specified group"
+  (check-type command string)
+  ;; FIXME: need to run, ignoring window placement rules
+  (gselect group)
+  (run-shell-command command))
+
+(defcommand grun-new (command) ((:shell "Enter command: "))
+  "Run shell command in new tile group with same name with command"
+  (check-type command string)
+  ;; FIXME: need to run, ignoring window placement rules
+  (gnew command)
+  (run-shell-command command))

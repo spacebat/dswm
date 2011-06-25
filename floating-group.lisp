@@ -196,7 +196,16 @@
 (defmethod group-root-exposure ((group float-group))
   )
 
-(defmethod group-add-head ((group float-group))
+(defmethod group-add-head ((group float-group) head)
+  (declare (ignore head)))
+
+(defmethod group-remove-head ((group float-group) head)
+  (declare (ignore head)))
+
+(defmethod group-resize-head ((group float-group) oh nh)
+  (declare (ignore oh nh)))
+
+(defmethod group-sync-all-heads ((group float-group))
   )
 
 (defmethod group-sync-head ((group float-group) head)
@@ -260,6 +269,7 @@
                                                      :discard-p t)
                      until (eq ev :done))
                (ungrab-pointer))
+	     (update-configuration window)
              ;; don't forget to update the cache
              (setf (window-x window) (xlib:drawable-x (window-parent window))
                    (window-y window) (xlib:drawable-y (window-parent window)))))))
@@ -278,3 +288,16 @@
 (defcommand gnewbg-float (name) ((:rest "Group Name: "))
 "Create a floating window group with the specified name, but do not switch to it."
   (add-group (current-screen) name :background t :type 'float-group))
+
+;; Experimental
+(defcommand grun-new-float (command) ((:shell "Enter command: "))
+  "Run shell command in new float group with same name with command"
+  (check-type command string)
+  (gnew-float command)
+  (run-shell-command command))
+
+(defcommand gmove-new-float (groupname) ((:string "Enter groupname: "))
+  "Run shell command in new float group with same name with command"
+  (check-type groupname string)
+  (gnewbg-float groupname)
+  (gmove  groupname))

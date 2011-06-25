@@ -64,6 +64,8 @@ menu, the error is re-signalled."
 (defun banish-pointer (&optional (where *banish-pointer-to*))
   "Move the pointer to the lower right corner of the head, or
  WHEREever (one of :screen :head :frame or :window)"
+  ;; FIXME: do it for (current-window) etc. For correct behavior
+  ;; in :sloopy mouse policy
   (let* ((screen (current-screen))
          (group (current-group))
          (head (current-head))
@@ -162,6 +164,9 @@ with base. Automagically update the cache."
                                 :end1 (length base)
                                 :end2 (length base)))) (path-cache-programs *path-cache*)))
 
+(defun complete-filename (base)
+  "Return the list of files in ")
+
 (defcommand run-shell-command (cmd &optional collect-output-p) ((:shell "Enter command: "))
   "Run the specified shell command. If @var{collect-output-p} is @code{T}
 then run the command synchonously and collect the output. Be
@@ -191,51 +196,11 @@ such a case, kill the shell command to resume DSWM."
 
 (defcommand-alias eval eval-line)
 
-;; (defcommand-alias run run-shell-command)
-
-(defcommand run-gnew-float (command) ((:shell "Enter command: "))
-  "Run shell command in new float group with same name with command"
-  (check-type command string)
-  (run-commands (concat "gnew-float " command))
-  (run-shell-command command))
-
-(defcommand run-gnew (command) ((:shell "Enter command: "))
-  "Run shell command in new float group with same name with command"
-  (check-type command string)
-  (run-commands (concat "gnew " command))
-  (run-shell-command command))
-
-;;;; Experimental ;;;;
-(defcommand move-window-to-new-group-float (groupname) ((:string "Enter groupname: "))
-  "Run shell command in new float group with same name with command"
-  (check-type groupname string)
-  (run-commands (concat "gnewbg-float " groupname))
-  (run-commands (concat "gmove " groupname)))
-
-(defcommand-alias gmove-new-float move-window-to-new-group-float)
-
-(defcommand move-window-to-new-group (groupname) ((:string "Enter groupname: "))
-  "Run shell command in new float group with same name with command"
-  (check-type groupname string)
-  (run-commands (concat "gnewbg " groupname))
-  (run-commands (concat "gmove " groupname)))
-
-(defcommand-alias gmove-new move-window-to-new-group)
-
-;;;; /Experimental ;;;;;
+(defcommand-alias run run-shell-command)
 
 (defcommand run-in-terminal (cmd) ((:shell "Enter command: "))
   "Run command in terminal"
-  (run-shell-command (format nil "~A -e ~A" *terminal* cmd)))
-
-;; (defcommand eval-line (cmd) ((:rest "Eval: "))
-;;   "Evaluate the s-expression and display the result(s)."
-;;   (handler-case
-;;       (message "^20~{~a~^~%~}"
-;;                (mapcar 'prin1-to-string
-;;                        (multiple-value-list (eval (read-from-string cmd)))))
-;;     (error (c)
-;;       (err "^B^1*~A" c))))
+  (run-shell-command (concat *terminal* "-e" cmd)))
 
 (defcommand echo (string) ((:rest "Echo: "))
   "Display @var{string} in the message bar."
@@ -290,7 +255,7 @@ made and you wish to replace the existing process with it.
 
 Any run-time customizations will be lost after the restart."
   (throw :top-level :hup-process))
-                
+
 (defun find-matching-windows (props all-groups all-screens)
   "Returns list of windows matching @var{props} (see run-or-raise
 documentation for details). @var{all-groups} will find windows on all
@@ -317,7 +282,7 @@ matches @var{props}. @var{props} is a property list with the following keys:
 Match the window's class.
 @item :instance
 Match the window's instance or resource-name.
-2@item :role
+@item :role
 Match the window's @code{WM_WINDOW_ROLE}.
 @item :title
 Match the window's title.
@@ -376,7 +341,8 @@ current frame instead of switching to the window."
 
 (defcommand emacs () ()
   "Start emacs unless it is already running, in which case focus it."
-  (run-or-raise "emacs" '(:class "Emacs")))
+  ;; Working for emacs and xemacs. FIXME: do for climacs
+  (run-or-raise *emacs* '(:class "Emacs")))
 
 (defcommand browser () ()
   "Start default browser, defined in *browser* variable unless it is already running, in which case focus it."

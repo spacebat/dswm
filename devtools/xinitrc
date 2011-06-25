@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# .xsession/.xinitrc
+export G_FILENAME_ENCODING=@locale
+export G_BROKEN_FILENAMES=1
+export OOO_FORCE_DESKTOP=gnome
+export GDK_USE_XFT=1
+export EDITOR=emacsclient
+#переключение раскладки
+#export LC_CTYPE=ru_RU.utf8
+export XMODIFIERS="@im=SCIM"
+export GTK_IM_MODULE="scim"
+export QT_IM_MODULE="scim"
+scim -d &
+#загрузка коинфига клавиш и внешнего вида
+xmodmap ~/.Xmodmap
+xrdb ~/.Xdefaults
+# D-bus
+if which dbus-launch >/dev/null && test -z "$DBUS_SESSION_BUS_ADDRESS"; then
+ eval `dbus-launch --sh-syntax --exit-with-session`
+fi
+#установка параметров клавы, энергосбережения, шрифтов и скорости мыши
+xset r rate 350 30
+xset -dpms &
+xset s off &
+xset fp+ /usr/share/fonts/local/
+xset fp+ /usr/share/fonts/artwiz-fonts/
+xset fp+ ~/.fonts/snap-11/
+xset fp rehach
+xset m 3
+#установка рисунка рабочего стола
+eval `cat ~/.fehbg` &
+#синхронизация буферов обмена
+autocutsel -f
+#управление мышью логитех
+lomoco -g &
+#скрываем курсор мыши через определенное время
+unclutter -idle 20 &
+# run daemon scripts
+/etc/X11/Xsession
+#запуск демона автомонтирования
+pgrep halevt >> /dev/null || halevt &
+#установка темы курсоров
+xsetroot -cursor_name left_ptr &
+#включение композита
+xcompmgr -a &
+exec /home/git/stumpwm/stumpwm

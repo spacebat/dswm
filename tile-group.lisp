@@ -1,5 +1,4 @@
 ;; Copyright (C) 2003-2008 Shawn Betts
-;; Copyright (C) 2010-2011 Alexander aka CosmonauT Vynnyk
 ;;
 ;;  This file is part of dswm.
 ;;
@@ -137,7 +136,38 @@
 (defmethod group-root-exposure ((group tile-group))
   (show-frame-outline group nil))
 
-(defmethod group-add-head ((group tile-group))
+(defmethod group-add-head ((group tile-group) head)
+  (let ((new-frame-num (find-free-frame-number group)))
+    (setf (tile-group-frame-tree group)
+          (insert-before (tile-group-frame-tree group)
+                         (copy-frame head)
+                         (head-number head)))
+    ;; Try to put something in the new frame and give it an unused number
+    (let ((frame (tile-group-frame-head group head)))
+      (setf (frame-number frame) new-frame-num)
+        (choose-new-frame-window frame group)
+        (when (frame-window frame)
+          (unhide-window (frame-window frame))))))
+
+(defmethod group-remove-head ((group tile-group) head)
+  (let ((windows (head-windows group head)))
+    ;; Remove it from the frame tree.
+    (setf (tile-group-frame-tree group) (delete (tile-group-frame-head group head) (tile-group-frame-tree group)))
+    ;; Just set current frame to whatever.
+    (let ((frame (first (group-frames group))))
+      (setf (tile-group-current-frame group) frame
+            (tile-group-last-frame group) nil)
+      ;; Hide its windows.
+      (dolist (window windows)
+        (hide-window window)
+        (setf (window-frame window) frame))))
+  ;; Try to do something with the orphaned windows
+  (populate-frames group))
+
+(defmethod group-resize-head ((group tile-group) oh nh)
+  (resize-tree (tile-group-frame-head group oh) (head-width nh) (head-height nh) (head-x nh) (head-y nh)))
+
+(defmethod group-sync-all-heads ((group tile-group))
   (sync-all-frame-windows group))
 
 (defmethod group-sync-head ((group tile-group) head)
@@ -145,6 +175,12 @@
     (sync-frame-windows group f)))
 
 ;;;;;
+
+(defun tile-group-frame-head (group head)
+  (elt (tile-group-frame-tree group) (position head (group-heads group))))
+
+(defun (setf tile-group-frame-head) (frame group head)
+  (setf (elt (tile-group-frame-tree group) (position head (group-heads group))) frame))
 
 (defun populate-frames (group)
   "Try to fill empty frames in GROUP with hidden windows"
@@ -317,7 +353,7 @@ T (default) then also focus the frame."
 
 (defun split-frame-h (group p ratio)
   "Return 2 new frames. The first one stealing P's number and window"
-  (let* ((w (truncate (* (frame-width p) ratio)))
+  (let* ((w (ratio-or-pixel (frame-width p) ratio))
          (h (frame-height p))
          (f1 (make-frame :number (frame-number p)
                          :x (frame-x p)
@@ -338,7 +374,7 @@ T (default) then also focus the frame."
 (defun split-frame-v (group p ratio)
   "Return 2 new frames. The first one stealing P's number and window"
   (let* ((w (frame-width p))
-         (h (truncate (* (frame-height p) ratio)))
+         (h (ratio-or-pixel (frame-height p) ratio))
          (f1 (make-frame :number (frame-number p)
                          :x (frame-x p)
                          :y (frame-y p)
@@ -354,6 +390,13 @@ T (default) then also focus the frame."
                          :window nil)))
     (run-hook-with-args *new-frame-hook* f2)
     (values f1 f2)))
+
+(defun ratio-or-pixel (length ratio)
+  "Return a ratio of length unless ratio is an integer.
+If ratio is an integer return the number of pixel desired."
+  (if (integerp ratio)
+      ratio
+      (truncate (* length ratio))))
 
 (defun funcall-on-leaf (tree leaf fn)
   "Return a new tree with LEAF replaced with the result of calling FN on LEAF."
@@ -728,7 +771,10 @@ depending on the tree's split direction."
 
 (defun split-frame (group how &optional (ratio 1/2))
   "Split the current frame into 2 frames. Return new frame number, if
-  it succeeded. NIL otherwise."
+it succeeded. NIL otherwise. RATIO is a fraction of the screen to
+allocate to the new split window. If ratio is an integer then the
+number of pixels will be used. This can be handy to setup the
+desktop when starting."
   (check-type how (member :row :column))
   (let* ((frame (tile-group-current-frame group))
          (head (frame-head group frame)))
@@ -834,14 +880,25 @@ windows used to draw the numbers in. The caller must destroy them."
 
 ;;; Frame commands
 
-(defun split-frame-in-dir (group dir)
+(defun split-frame-in-dir (group dir &optional (ratio 1/2))
   (let ((f (tile-group-current-frame group)))
-    (if (split-frame group dir)
+    (if (split-frame group dir ratio)
         (progn
           (when (frame-window f)
             (update-decoration (frame-window f)))
           (show-frame-indicator group))
         (message "Cannot split smaller than minimum size."))))
+
+(defun move-focus-and-or-window-to (frame-number &optional win-p)
+  ;; FIXME make check for type
+  ;; (declare (type (member (group-frames (current-group))) frame-number))
+  (let* ((group (current-group))
+         (new-frame frame-number)
+	 (window (current-window)))
+    (when new-frame
+      (if (and win-p window)
+          (pull-window window new-frame)
+	(focus-frame group new-frame)))))
 
 (defcommand (hsplit tile-group) () ()
 "Split the current frame into 2 side-by-side frames."
@@ -1073,17 +1130,6 @@ jump to that frame."
           (pull-window window new-frame)
           (focus-frame group new-frame)))))
 
-(defun move-focus-and-or-window-to (frame-number &optional win-p)
-  ;; FIXME make check for type
-  ;; (declare (type (member (group-frames (current-group))) frame-number))
-  (let* ((group (current-group))
-         (new-frame frame-number)
-	 (window (current-window)))
-    (when new-frame
-      (if (and win-p window)
-          (pull-window window new-frame)
-	(focus-frame group new-frame)))))
-
 (defcommand (move-focus tile-group) (dir) ((:direction "Direction: "))
 "Focus the frame adjacent to the current one in the specified
 direction. The following are valid directions:
@@ -1098,10 +1144,6 @@ direction. The following are valid directions:
 (defcommand (move-window tile-group) (dir) ((:direction "Direction: "))
 "Just like move-focus except that the current is pulled along."
   (move-focus-and-or-window dir t))
-
-(defcommand (move-window-to-frame tile-group) (frame-number) ((:frame "Frame number: "))
-"Just like move-focus except that the current is pulled along."
-  (move-focus-and-or-window-to frame-number t))
 
 (defcommand (next-in-frame tile-group) () ()
 "Go to the next window in the current frame."
@@ -1129,3 +1171,7 @@ direction. The following are valid directions:
     (if tree
         (balance-frames-internal (current-group) tree)
         (message "There's only one frame."))))
+
+(defcommand (move-window-to-frame tile-group) (frame-number) ((:frame "Frame number: "))
+  "Just like move-focus except that the current is pulled along."
+  (move-focus-and-or-window-to frame-number t))

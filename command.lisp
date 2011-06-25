@@ -309,8 +309,8 @@ then describes the symbol."
       (lookup-symbol (argument-pop-or-read input prompt))
     (if (symbol-function sym)
         (symbol-function sym)
-        (throw 'error (format nil "the symbol ~a::~a has no function."
-                              (package-name pkg) var)))))
+      (throw 'error (format nil "the symbol ~a::~a has no function."
+			    (package-name pkg) var)))))
 
 (define-dswm-type :command (input prompt)
   (or (argument-pop input)
@@ -355,10 +355,13 @@ then describes the symbol."
           (declare (ignore c))
           (throw 'error "Number required."))))))
 
-
 (define-dswm-type :string (input prompt)
   (or (argument-pop input)
       (read-one-line (current-screen) prompt)))
+
+(define-dswm-type :password (input prompt)
+  (or (argument-pop input)
+      (read-one-line (current-screen) prompt :password t)))
 
 (define-dswm-type :key (input prompt)
   (let ((s (or (argument-pop input)
@@ -399,18 +402,17 @@ then describes the symbol."
 
 (defun select-group (screen query)
   "Attempt to match string QUERY against group number or partial name."
-  (let ((num (ignore-errors (parse-integer query))))
-    (labels ((match-whole (grp)
-               (string-equal (group-name grp) query))
-             (match-partial (grp)
-               (let* ((end (min (length (group-name grp)) (length query))))
-                 (string-equal (group-name grp) query :end1 end :end2 end)))
-             (match-num (grp)
-               (eql (group-number grp) num)))
-      (when query
-        (or (find-if #'match-whole (screen-groups screen))
-            (find-if #'match-partial (screen-groups screen))
-            (find-if #'match-num (screen-groups screen)))))))
+  (labels ((match-num (grp)
+             (string-equal (princ-to-string (group-map-number grp)) query))
+           (match-whole (grp)
+             (string-equal (group-name grp) query))
+           (match-partial (grp)
+             (let* ((end (min (length (group-name grp)) (length query))))
+               (string-equal (group-name grp) query :end1 end :end2 end))))
+    (when query
+      (or (find-if #'match-num (screen-groups screen))
+          (find-if #'match-whole (screen-groups screen))
+          (find-if #'match-partial (screen-groups screen))))))
 
 (define-dswm-type :group (input prompt)
   (let ((match (select-group (current-screen)
@@ -436,6 +438,11 @@ then describes the symbol."
 (define-dswm-type :shell (input prompt)
   (or (argument-pop-rest input)
       (completing-read (current-screen) prompt 'complete-program)))
+
+;;; FIXME: Not implemented with autocomplete
+(define-dswm-type :file (input prompt)
+  (or (argument-pop input)
+      (read-one-line (current-screen) prompt)))
 
 (define-dswm-type :rest (input prompt)
   (or (argument-pop-rest input)

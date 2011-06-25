@@ -34,16 +34,16 @@
 (defvar *escape-key* (kbd "C-j")
   "The escape key. Any keymap that wants to hang off the escape key
 should use this specific key struct instead of creating their own
-C-t.")
+c-j.")
 
 (defvar *escape-fake-key* (kbd "j")
   "The binding that sends the fake escape key to the current window.")
 
 (defvar *root-map* nil
-  "This is the keymap by default bound to @kbd{C-t}. It is known as the @dfn{prefix map}.")
+  "This is the keymap by default bound to @kbd{c-j}. It is known as the @dfn{prefix map}.")
 
 (defvar *groups-map* nil
-  "The keymap that group related key bindings sit on. It is bound to @kbd{C-t g} by default.")
+  "The keymap that group related key bindings sit on. It is bound to @kbd{c-j g} by default.")
 
 (defvar *help-map* nil
   "Help related bindings hang from this keymap")
@@ -92,6 +92,7 @@ from most specific groups to most general groups.")
   (kbd "a")   "time"
   (kbd "C-a") "time"
   (kbd "!")   "exec"
+  (kbd "t")   "run-in-terminal"
   (kbd "C-g") "abort"
   *escape-fake-key* "send-escape"
   (kbd ";")   "colon"
@@ -111,6 +112,7 @@ from most specific groups to most general groups.")
   (kbd "F8")  "gselect 8"
   (kbd "F9")  "gselect 9"
   (kbd "F10") "gselect 10"
+  (kbd "C-h") "help-short"
   (kbd "h")   '*help-map*)
 
 (fill-keymap *group-top-map*
@@ -193,7 +195,6 @@ from most specific groups to most general groups.")
 
 (fill-keymap *float-group-top-map*)
 (fill-keymap *float-group-root-map*)
-             
 
 (fill-keymap *groups-map*
   (kbd "g")     "groups"
@@ -214,6 +215,8 @@ from most specific groups to most general groups.")
   (kbd "k")     "gkill"
   (kbd "A")     "grename"
   (kbd "r")     "grename"
+  (kbd "!")     "run-gnew"
+  (kbd "@")     "run-gnew-float"
   (kbd "1")     "gselect 1"
   (kbd "2")     "gselect 2"
   (kbd "3")     "gselect 3"
@@ -234,7 +237,7 @@ from most specific groups to most general groups.")
 
 (defcommand command-mode () ()
 "Command mode allows you to type ratpoison commands without needing the
-@key{C-t} prefix. Keys not bound in StumpWM will still get sent to the
+@key{c-j} prefix. Keys not bound in StumpWM will still get sent to the
 current window. To exit command mode, type @key{C-g}."
   (message "Press C-g to exit command-mode.")
   (push-top-map *root-map*))

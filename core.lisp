@@ -112,8 +112,10 @@
 
 (defun ungrab-pointer ()
   "Remove the grab on the cursor and restore the cursor shape."
-  (xlib:ungrab-pointer *display*)
-  (xlib:display-finish-output *display*))
+  (when (> *grab-pointer-count* 0) (decf *grab-pointer-count*))
+  (when (eq *grab-pointer-count* 0)
+    (xlib:ungrab-pointer *display*)
+    (xlib:display-finish-output *display*)))
 
 (defun grab-keyboard (xwin)
   (let ((ret (xlib:grab-keyboard xwin :owner-p nil
@@ -135,16 +137,50 @@
   "Move the pointer by DX and DY relative to the current location."
   (xlib:warp-pointer-relative *display* dx dy))
 
-(defun concat (&rest strings)
-  "Concatenates strings, like the Unix command 'cat'.
-A short for (concatenate 'string foo bar)."
-  (apply 'concatenate 'string strings))
-
-(defun interactive ()
-  "For emacs themes compability"
-  t)
-
 (defun string-as-directory (dir)
   (unless (string= "/" (subseq dir (1- (length dir))))
     (setf dir (concat dir "/")))
   (pathname dir))
+
+;; Macros for different modes
+(defmacro add-dswm-behavior (shortname-if shortname-if-not name)
+  "Macro for add behavior-specific macros"
+  `(progn
+     (defmacro ,shortname-if (body)
+       (let ((a ,name))
+	 `(if (member ,a *mode* :test 'equal)
+	      ,body t)))
+     (defmacro ,shortname-if-not (body)
+       (let ((a ,name))
+	 `(if (not (member ,a *mode* :test 'equal))
+	      ,body t)))))
+
+(add-dswm-behavior +st -st "sesstion-transparent") ;; add sesstion transparent behavior
+(add-dswm-behavior +i -i "interactive") ;; add interactive behavior
+
+(defmacro eval-with-message (&key body
+				  body-alternative
+				  message-if-done
+				  message-if-false)
+  "Eval someting s-expression with messages, when it's done and false"
+  `(if ,body
+       ,(if (not (null message-if-done))
+	    `(message ,message-if-done)
+	  t)
+     ,(if (member 'interactive *mode*)
+	  (cond ((not (null body-alternative))
+		 `body-alternative)
+		((not (null message-if-false))
+		 `(error ,message-if-false))
+		(t nil))
+	(if (not (null message-if-false))
+	    `(error ,message-if-false)
+	  nil))))
+
+
+
+
+
+
+
+

@@ -40,7 +40,7 @@
 
 (defstruct mode-line
   screen
-x  head
+  head
   window
   format
   position
@@ -148,10 +148,9 @@ timer.")
 FIXME: do it around builtin timers")
 
 (defvar *mode-line-blinker* nil
-  "Variable for blink urgent windows, or widgets
-FIXME: do it around builtin timers")
+  "Variable for blink urgent windows, or widgets")
 
-;;; Formatters
+;; ;;; Formatters
 
 (defun add-screen-mode-line-formatter (character fmt-fun)
   "Add a format function to a format character (or overwrite an existing one)."
@@ -202,30 +201,32 @@ Redefining standard fmt-group-list for hiding scratchpad group"
 					   (remove-empty-elements (cdr list)))))))
     (format nil "~{~a~^ ~}"
 	    (if (eq 0 (group-number (current-group)))
-		(cons
-		 (fmt-solo-blink "SCRATCHPAD")
-		 (remove-empty-elements
-		  (mapcar (lambda (w)
-			    (let* ((str (format-expand *group-formatters* *group-format* w)))
-			      (cond ((eq w (second (screen-groups (current-screen))))
-				     (fmt-highlight str))
-				    ((not (eq 0 (group-number w)))
-				     str)
-				    (t
-				     (format nil "")))))
-			  (sort-groups (group-screen (mode-line-current-group
-						      ml))))))
-		 (remove-empty-elements
-		  (mapcar (lambda (w)
-			    (let* ((str (format-expand *group-formatters* *group-format* w)))
-			      (cond ((eq w (current-group))
-				     (fmt-highlight str))
-				    ((not (eq 0 (group-number w)))
-				     str)
-				    (t
-				     (format nil "")))))
-			  (sort-groups (group-screen (mode-line-current-group
-						      ml)))))))))
+		;; TODO Make it better
+		(reverse
+		 (cons "]]" (reverse
+			     (cons (concat (fmt-highlight "<SCRATCHPAD>") "[[")
+				   (remove-empty-elements
+				    (mapcar (lambda (w)
+					      (let* ((str (format-expand *group-formatters* *group-format* w)))
+						(cond ((eq w (second (screen-groups (current-screen))))
+						       (fmt-highlight str))
+						      ((not (eq 0 (group-number w)))
+						       str)
+						      (t
+						       (format nil "")))))
+					    (sort-groups (group-screen (mode-line-current-group
+									ml)))))))))
+	      (remove-empty-elements
+	       (mapcar (lambda (w)
+			 (let* ((str (format-expand *group-formatters* *group-format* w)))
+			   (cond ((eq w (current-group))
+				  (fmt-highlight str))
+				 ((not (eq 0 (group-number w)))
+				  str)
+				 (t
+				  (format nil "")))))
+		       (sort-groups (group-screen (mode-line-current-group
+						   ml)))))))))
 
 (defun fmt-head (ml)
   (format nil "~d" (head-number (mode-line-head ml))))
@@ -235,15 +236,6 @@ Redefining standard fmt-group-list for hiding scratchpad group"
 
 (defun fmt-highlight (s)
   (format nil "^R~A^r" s))
-
-;; (defun fmt-blink (s)
-;;   (if (null *mode-line-blinker*)
-;;       (progn
-;; 	(setq *mode-line-blinker* t)
-;; 	(format nil "^R~A^r" s))
-;;     (progn
-;;       (setq *mode-line-blinker* nil)
-;;       (format nil "^r~A^R" s))))
 
 (defun toggle-mode-line-blink ()
   (if (null *mode-line-blinker*)
@@ -292,7 +284,7 @@ fmt-highlight. Any non-visible windows are colored the
 
 (defun fmt-modeline-time (ml)
   (declare (ignore ml))
-  (format-expand *time-format-string-alist* *time-modeline-string*))
+    (time-format *time-modeline-string*))
 
 (defvar *bar-med-color* "^B")
 (defvar *bar-hi-color* "^B^3*")

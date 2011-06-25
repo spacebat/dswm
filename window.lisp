@@ -254,6 +254,12 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
                    :format 32
                    :data data))
 
+(defun window-map-number (window)
+  (let ((num (window-number window)))
+    (or (and (< num (length *window-number-map*))
+             (elt *window-number-map* num))
+        num)))
+
 (defun fmt-window-status (window)
   (let ((group (window-group window)))
     (cond ((eq window (group-current-window group))
@@ -376,7 +382,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
   (setf (xlib:drawable-border-width win) width))
 
 (defun default-border-width-for-type (window)
-  (or (and (xwin-maxsize-p (window-xwin window))
+  (or (and (window-maxsize-p (window-xwin window))
            *maxsize-border-width*)
       (ecase (window-type window)
         (:dock 0)
@@ -497,7 +503,7 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
       (when (eq window (current-window))
         (group-lost-focus (window-group window))))))
 
-(defun xwin-maxsize-p (win)
+(defun window-maxsize-p (win)
   "Returns T if WIN specifies maximum dimensions."
   (let ((hints (get-normalized-normal-hints win)))
     (and hints (or (xlib:wm-size-hints-max-width hints)
@@ -573,7 +579,7 @@ and bottom_end_x."
 
 (defun gravity-for-window (win)
   (or (window-gravity win)
-      (and (xwin-maxsize-p (window-xwin win)) *maxsize-gravity*)
+      (and (window-maxsize-p (window-xwin win)) *maxsize-gravity*)
       (ecase (window-type win)
         (:dock *normal-gravity*)
         (:normal *normal-gravity*)
@@ -606,7 +612,7 @@ and bottom_end_x."
 
 (defun find-free-window-number (group)
   "Return a free window number for GROUP. Begining from '1'"
-  (find-free-number (mapcar 'window-number (group-windows group)) 1))
+  (find-free-number (mapcar 'window-number (group-windows group)) 0))
 
 (defun reparent-window (screen window)
   ;; apparently we need to grab the server so the client doesn't get
@@ -1083,3 +1089,7 @@ be used to override the default window formatting."
     (set-window-geometry window
                          :width w
                          :height h)))
+
+(defcommand place-existing-windows () ()
+  "Re-arrange existing windows according to placement rules."
+  (sync-window-placement))

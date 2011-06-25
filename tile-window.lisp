@@ -409,57 +409,149 @@ frame. Possible values are:
                 :role (and (not (equal role "")) role))
           *window-placement-rules*)))
 
-(defun make-rule-for-group (group &optional lock title)
+(defun make-rules-for-group (group &optional lock title)
+  "Guess at a placement rule for all WINDOWS in group and add it to the current set."
   (dolist (i (group-windows group))
     (make-rule-for-window i lock title)))
 
-(defun make-rule-for-screen (screen &optional lock title)
+(defun make-rules-for-screen (screen &optional lock title)
+  "Guess at a placement rule for all WINDOWS in all groups in current screen and add it to the current set."
   (dolist (i (screen-groups screen))
-    (make-rule-for-group i lock title)))
+    (make-rules-for-group i lock title)))
 
-(defun make-rule-for-desktop (&optional lock title)
+(defun make-rules-for-desktop (&optional lock title)
   (dolist (i *screen-list*)
-    (make-rule-for-screen i lock title)))
+    (make-rules-for-screen i lock title)))
 
-(defcommand (remember tile-group) (lock title)
-                                  ((:y-or-n "Lock to group? ")
-                                   (:y-or-n "Use title? "))
+(defun remove-rule-for-window (window)
+  "Forget window of given group and screen"
+  (let ((match (rule-matching-window window)))
+    (when match
+      (setf
+       *window-placement-rules*
+       (delete match *window-placement-rules*)))))
+
+(defun remove-rules-for-group (group)
+  "Forget all windows of given group"
+  (dolist (i (group-windows group))
+    (remove-rule-for-window i)))
+
+(defun remove-rules-for-screen (screen &optional lock title)
+  "Forget all windows of given screen"
+  (dolist (i (screen-groups screen))
+    (remove-rules-for-group i)))
+
+(defmacro forget-remember-rules (body message message-false)
+  "Local macro. Forget or remember windows placement rules with +/-st functionality"
+  `(eval-with-message :body (progn ,body
+				   (+st
+				    (dump-to-file *window-placement-rules*
+						  (data-dir-file "window-placement" "rules") t)))
+		      :message-if-done ,message
+		      :message-if-false ,message-false))
+
+(defcommand (remember-window tile-group) (lock title)
+  ((:y-or-n "Lock to group? ")
+   (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
-  (make-rule-for-window (current-window) (first lock) (first title)))
+  (forget-remember-rules
+   (make-rule-for-window (current-window) (first lock) (first title))
+   "Rules remembered"
+   "Can't remember rules. Check write permissions to dswm data
+directory and files"))
 
-(defcommand (remember-group tile-group) (lock title)
-                                  ((:y-or-n "Lock to group? ")
-                                   (:y-or-n "Use title? "))
+(defcommand-alias remember remember-window)
+
+(defcommand (remember-windows-this-group tile-group) (lock title)
+  ((:y-or-n "Lock to group? ")
+   (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
-  (make-rule-for-group (current-group) (first lock) (first title)))
+  (forget-remember-rules
+   (make-rules-for-group (current-group) (first lock) (first title))
+   "Rules remembered"
+   "Can't remember rules. Check write permissions to dswm data
+directory and files"))
 
-(defcommand (remember-desktop tile-group) (lock title)
-                                  ((:y-or-n "Lock to group? ")
-                                   (:y-or-n "Use title? "))
+(defcommand remember-windows-this-screen (lock title)
+  ((:y-or-n "Lock to group? ")
+   (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
-  (make-rule-for-desktop (first lock) (first title)))
+  (forget-remember-rules
+   (make-rules-for-screen (current-screen) (first lock) (first title))
+   "Rules remembered"
+   "Can't remember rules. Check write permissions to dswm data
+directory and files") )
 
-(defcommand (forget tile-group) () ()
-  "Forget the window placement rule that matches the current window."
-  (let* ((window (current-window))
-         (match (rule-matching-window window)))
-    (if match
-        (progn
-          (setf *window-placement-rules* (delete match *window-placement-rules*))
-          (message "Rule forgotten"))
-        (message "No matching rule"))))
+(defcommand (remember-all-windows tile-group) (lock title)
+  ((:y-or-n "Lock to group? ")
+   (:y-or-n "Use title? "))
+  "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
+  (and
+   (not (setf *window-placement-rules* nil))
+   (make-rules-for-desktop (first lock) (first title))
+   "Rules remembered"
+   "Can't remember rules. Check write permissions to dswm data
+directory and files"))
 
-(defcommand (dump-window-placement-rules tile-group) (file) ((:rest "Filename: "))
-  "Dump *window-placement-rules* to FILE."
-  (dump-to-file *window-placement-rules* file))
+(defcommand revert-windows () ()
+  "Restore window placement rules, which were befor last change"
+  (setf *window-placement-rules*
+	(read-dump-from-file
+	 (data-dir-file "window-placement" "rules~"))))
 
-(defcommand-alias dump-rules dump-window-placement-rules)
+(defcommand (forget-window tile-group) () ()
+  "Make a generic placement rule for the current window. Might be too
+specific/not specific enough!"
+  (forget-remember-rules
+   (remove-rule-for-window (current-window))
+   "Rules forgotten"
+   "Can't forgot rules. Check write permissions to dswm data
+directory and files"))
 
-(defcommand (restore-window-placement-rules tile-group) (file) ((:rest "Filename: "))
-  "Restore *window-placement-rules* from FILE."
-  (setf *window-placement-rules* (read-dump-from-file file)))
+(defcommand-alias forget forget-window)
 
-(defcommand-alias restore-rules restore-window-placement-rules)
+(defcommand (forget-windows-this-group tile-group) () ()
+  "Remove a generic placement rule for the current window. Might be too specific/not specific enough!"
+  (forget-remember-rules
+   (remove-rules-for-group (current-group))
+   "Rules forgotten"
+   "Can't forgot rules. Check write permissions to dswm data directory and files"))
+
+(defcommand forget-windows-this-screen () ()
+  "Remove generic placement rules for the all windows in current screen"
+  (forget-remember-rules
+   (make-rules-for-screen (current-screen))
+   "Rules forgotten"
+   "Can't forgot rules. Check write permissions to dswm data directory and files"))
+
+(defcommand forget-all-windows () ()
+  "Remove placement rules for all windows"
+  (forget-remember-rules
+   (setf *window-placement-rules* nil)
+   "Rules forgot"
+   "Can't forgot rules. Check write permissions to dswm data directory and files") )
+
+(-st
+ (defcommand (dump-window-placement-rules tile-group) (file)
+   ((:file "Enter filename to dump: "))
+   "Dump *window-placement-rules* to FILE."
+   (dump-to-file *window-placement-rules* file))
+ )
+
+(-st
+ (defcommand-alias dump-rules dump-window-placement-rules)
+ )
+
+(-st
+ (defcommand restore-window-placement-rules (file)
+   ((:file "Enter filename to restore: "))
+   "Restore *window-placement-rules* from FILE."
+   (setf *window-placement-rules* (read-dump-from-file file)))
+ )
+
+(-st
+ (defcommand-alias restore-rules restore-window-placement-rules)
+ )
 
 (defcommand (redisplay tile-group) () ()
   "Refresh current window by a pair of resizes, also make it occupy entire frame."

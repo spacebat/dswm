@@ -28,13 +28,9 @@
 (export '(*version* version))
 
 (defparameter *version*
-  #.(concatenate 'string
-                 (if (probe-path ".git")
-                     (string-trim '(#\Newline) (run-shell-command "git describe" t))
-                     "@PACKAGE_VERSION@")
-                 " Compiled On "
-		 (format-expand *time-format-string-alist*
-                                *time-format-string-default*)))
+  #.(concat "@PACKAGE_VERSION@" " Compiled On "
+	    (format-expand *time-format-string-alist*
+			   *time-format-string-default*)))
 
 (defcommand version () ()
 "Print version information and compilation date."

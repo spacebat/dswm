@@ -1,0 +1,9 @@
+* Awesome-mode-line
+  http://stumpwm.antidesktop.net/wiki/awesome-mode-line
+
+  Currently only runs on sbcl.
+
+  + Disable the mode-line
+  + Run: xhost +localhost
+  + Run: xhost -localhost after testing
+  + Run using sbcl: sbcl --load test.lisp
