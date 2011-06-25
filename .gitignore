@@ -5,6 +5,7 @@
 *.o
 *.*fsl
 *~
+*.jpg
 configure
 config.log
 config.status
