@@ -1067,7 +1067,7 @@ The window's title must match @var{title}.
          (push (list* ,target-group frame-number raise lock keys)
                *window-placement-rules*)))))
 
-(defvar *mouse-focus-policy* :sloopy
+(defvar *mouse-focus-policy* :sloppy
   "The mouse focus policy decides how the mouse affects input
 focus. Possible values are :ignore, :sloppy, and :click. :ignore means
 dswm ignores the mouse. :sloppy means input focus follows the

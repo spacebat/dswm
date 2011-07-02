@@ -308,7 +308,7 @@ Groups are known as \"virtual desktops\" in the NETWM standard."
 		    (netwm-update-groups screen)
 		    (+st
 		     (dump-to-file *window-placement-rules*
-						  (data-dir-file "windows-placement" "rules") t)) ; for session-transparent mode
+						  (data-dir-file "window-placement" "rules") t)) ; for session-transparent mode
 		    ng))))
       (unless background
 	(switch-to-group ng))

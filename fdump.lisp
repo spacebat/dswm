@@ -287,14 +287,13 @@
 (defun restore-all ()
   "Restore all rules. Useful at startup"
   (progn
-    (read-dump-from-file
+    (restore-from-file
      (data-dir-file "desktop" "rules"))
     (setf *window-placement-rules*
 	  (read-dump-from-file
-	   (data-dir-file "windows-placement" "rules")))
+	   (data-dir-file "window-placement" "rules")))
     ;; Add function for restore all programs, running in last session
     ))
-
 
 ;; Commands for dump and restore desktop
 
