@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+#
+# See also: http://sph-info.eu/textual/computer/programs/org2dokuwiki
+#
 # Usage
 #
 # cat <<EOF | ./org2doku
