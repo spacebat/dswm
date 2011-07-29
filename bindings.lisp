@@ -85,18 +85,18 @@ from most specific groups to most general groups.")
   (kbd "C-c") "terminal"
   (kbd "e")   "emacs"
   (kbd "C-e") "emacs"
-  (kbd "b")   "browser"
-  (kbd "C-b") "browser"
-  (kbd "C-B") "banish"
-  (kbd "B") "banish"
+  (kbd "b")   "windowlist" ;+
+  (kbd "C-b") "windows" ;+
+  (kbd "C-B") "browser"
+  (kbd "B")   "browser"
   (kbd "a")   "time"
   (kbd "C-a") "time"
+  (kbd ";")   "colon"
+  (kbd ":")   "eval"
   (kbd "!")   "exec"
   (kbd "t")   "run-in-terminal"
   (kbd "C-g") "abort"
   *escape-fake-key* "send-escape"
-  (kbd ";")   "colon"
-  (kbd ":")   "eval"
   (kbd "v")   "version"
   (kbd "m")   "move-window-to-frame"
   (kbd "C-m") "lastmsg"
@@ -120,8 +120,8 @@ from most specific groups to most general groups.")
 
 (fill-keymap *group-root-map*
   (kbd "C-u") "next-urgent"
-  (kbd "w")   "windows"
-  (kbd "C-w") "windows"
+  ;; (kbd "w")   "windows" ;+
+  ;; (kbd "C-w") "windows" ;+
   (kbd "k")   "delete"
   (kbd "C-k") "delete"
   (kbd "K")   "kill"

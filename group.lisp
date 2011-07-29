@@ -504,8 +504,8 @@ The windows will be moved to group \"^B^2*~a^n\"
               (switch-to-group to-group)
               (kill-group dead-group to-group)
 	      (+st (dump-desktop))
-              (message "Deleted"))
-            (message "Canceled"))
+              (message (format nil "Group ~a deleted" (group-name dead-group))))
+	  (message "Canceled"))
         (message "There's only one group left"))))
 
 (defcommand gmerge (from) ((:group "From Group: "))
