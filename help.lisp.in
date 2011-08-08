@@ -26,7 +26,17 @@
 
 (in-package #:dswm)
 
-;; (export '())
+;; (export '(*version* version))
+
+;; Version
+(defparameter *version*
+  #.(concat "@PACKAGE_VERSION@" " Compiled On "
+	    (format-expand *time-format-string-alist*
+			   *time-format-string-default*)))
+
+(defcommand version () ()
+"Print version information and compilation date."
+  (message *version*))
 
 (defvar *tip-of-the-day-list* nil
   "tips of the day list")
@@ -106,7 +116,10 @@ Basic keybindings:
   for describing keybinding or command
 * ^BYou can always show this message^b, entering ~a h^b, or throug
   internal command ^Bhelp-short^b
-" (print-key *escape-key*) (data-dir) (print-key *escape-key*) (print-key *escape-key*))))
+Notes:
+^BVersion: ~a
+License: GNU GPL v.2^b
+" (print-key *escape-key*) (data-dir) (print-key *escape-key*) (print-key *escape-key*) *version*)))
     (when (or (not (file-exists-p not-firststart-p))
 	       show)
       (progn (message-no-timeout firststart-message)
