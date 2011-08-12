@@ -341,7 +341,7 @@ current window of the current group to the new one."
       (move-window-to-group win next)
       (really-raise-window win))))
 
-(defcommand gnew (name) ((:string "Group Name: "))
+(defcommand gnew (name) ((:string "Enter Group Name: "))
   "Create a new group with the specified name. The new group becomes the
 current group. If @var{name} begins with a dot (``.'') the group new
 group will be created in the hidden state. Hidden groups have group
@@ -351,20 +351,31 @@ groups and vgroups commands."
       (+i (run-commands "gnew"))
     (+st (dump-desktop))))
 
-(defcommand gnewbg (name) ((:string "Group Name: "))
+(defcommand gnew-with-window (name) ((:string "Enter Group Name: "))
+  "Run shell command in new group with same name with command"
+  (gnewbg name)
+  (gmove name))
+
+(defcommand gnewbg (name) ((:string "Enter Group Name: "))
   "Create a new group but do not switch to it."
   (if (not (add-group (current-screen) name :background t))
       (+i (run-commands "gnewbg"))))
 
 (defcommand gnext () ()
-"Cycle to the next group in the group list."
-  (group-forward (current-group)
-                 (sort-groups (current-screen))))
+  "Cycle to the next group in the group list."
+  (if (eq (group-number (current-group)) 0)
+      (group-forward (nth 1 (screen-groups (current-screen)))
+		     (sort-groups (current-screen)))
+    (group-forward (current-group)
+		   (sort-groups (current-screen)))))
 
 (defcommand gprev () ()
-"Cycle to the previous group in the group list."
-  (group-forward (current-group)
-                 (reverse (sort-groups (current-screen)))))
+  "Cycle to the previous group in the group list."
+  (if (eq (group-number (current-group)) 0)
+      (group-forward (nth 1 (screen-groups (current-screen)))
+		     (reverse (sort-groups (current-screen))))
+    (group-forward (current-group)
+		   (reverse (sort-groups (current-screen))))))
 
 (defcommand gnext-with-window () ()
   "Cycle to the next group in the group list, taking the current
@@ -382,7 +393,9 @@ window along."
   "Go back to the last group."
   (let ((groups (screen-groups (current-screen))))
     (when (> (length groups) 1)
-      (switch-to-group (second groups)))))
+      (if (eq (group-number (current-group)) 0)
+	  (switch-to-group (nth 2 groups))
+	(switch-to-group (nth 1 groups))))))
 
 (defcommand grename (name) ((:string "New name for group: "))
   "Rename the current group."
@@ -440,7 +453,7 @@ the default group formatting and window formatting, respectively."
                t (or wfmt *window-format*)))
 
 (defcommand gselect (to-group) ((:group "Select Group: "))
-"Select the first group that starts with
+  "Select the first group that starts with
 @var{substring}. @var{substring} can also be a number, in which case
 @command{gselect} selects the group with that number."
   (when to-group
@@ -463,27 +476,23 @@ the default group formatting and window formatting, respectively."
 ;; To Command groups is deprecated as not functional (experimental change)
 (defcommand-alias groups grouplist)
 
-(defcommand gmove (to-group) ((:group "To Group: "))
-"Move the current window to the specified group."
-  (when (and to-group
+(defcommand gselect-with-window (group) ((:group "To Group: "))
+  "Move the current window to the specified group."
+  (when (and group
              (current-window))
-    (move-window-to-group (current-window) to-group)))
+    (move-window-to-group (current-window) group)))
 
-(defcommand gmove-marked (to-group) ((:group "To Group: "))
+(defcommand-alias gmove gselect-with-window)
+
+(defcommand gselect-with-marked-window (group) ((:group "To Group: "))
   "move the marked windows to the specified group."
-  (when to-group
-    (let ((group (current-group)))
-      (dolist (i (marked-windows group))
+  (when group
+    (let ((current-group (current-group)))
+      (dolist (i (marked-windows current-group))
         (setf (window-marked i) nil)
-        (move-window-to-group i to-group)))))
+        (move-window-to-group i group)))))
 
-;; Experimental
-(defcommand gmove-new (groupname) ((:string "Enter groupname: "))
-  "Run shell command in new float group with same name with command"
-  (check-type groupname string)
-  (gnewbg groupname)
-  (gmove groupname))
-;; /Experimental
+(defcommand-alias gmove-marked gselect-with-marked-window)
 
 (defcommand gkill () ()
 "Kill the current group. All windows in the current group are migrated
@@ -517,18 +526,15 @@ The windows will be moved to group \"^B^2*~a^n\"
 	(+i (run-commands "gmerge")))
       (merge-groups from (current-group))))
 
-;; Experimental
 (defcommand grun (command group) ((:shell "Enter command to run program: ")
 				  (:group "In what group? "))
   "Run shell command in specified group"
-  (check-type command string)
   ;; FIXME: need to run, ignoring window placement rules
   (gselect group)
   (run-shell-command command))
 
 (defcommand grun-new (command) ((:shell "Enter command: "))
   "Run shell command in new tile group with same name with command"
-  (check-type command string)
   ;; FIXME: need to run, ignoring window placement rules
   (gnew command)
   (run-shell-command command))
