@@ -420,7 +420,7 @@ window along."
                                        (format-expand *window-formatters*
                                                       (concatenate 'string "  " wfmt)
                                                       w))
-                                     (sort-windows g)))))
+                                     (sort-windows-by-number g)))))
                         (if *list-hidden-groups* groups (non-hidden-groups groups)))))
     (echo-string-list screen names)))
 

@@ -72,7 +72,10 @@
   (sync-frame-windows group (window-frame window))
   ;; maybe show the window in its new frame
   (when (null (frame-window (window-frame window)))
-    (really-raise-window window)))
+    ;; Experimental: Issue 0000012
+    ;;    (really-raise-window window)))
+    (frame-raise-window group (window-frame window) window raise)))
+;; /Issue
 
 (defmethod group-current-window ((group tile-group))
   (frame-window (tile-group-current-frame group)))
@@ -900,16 +903,16 @@ windows used to draw the numbers in. The caller must destroy them."
           (pull-window window new-frame)
 	(focus-frame group new-frame)))))
 
-(defcommand (hsplit tile-group) () ()
-"Split the current frame into 2 side-by-side frames."
-  (split-frame-in-dir (current-group) :column))
+(defcommand (hsplit tile-group) (&optional (ratio "1/2")) (:string)
+  "Split the current frame into 2 side-by-side frames."
+  (split-frame-in-dir (current-group) :column (read-from-string ratio)))
 
-(defcommand (vsplit tile-group) () ()
-"Split the current frame into 2 frames, one on top of the other."
-  (split-frame-in-dir (current-group) :row))
+(defcommand (vsplit tile-group) (&optional (ratio "1/2")) (:string)
+  "Split the current frame into 2 frames, one on top of the other."
+  (split-frame-in-dir (current-group) :row (read-from-string ratio)))
 
 (defcommand (remove-split tile-group) (&optional (group (current-group)) (frame (tile-group-current-frame group))) ()
-"Remove the specified frame in the specified group (defaults to current
+  "Remove the specified frame in the specified group (defaults to current
 group, current frame). Windows in the frame are migrated to the frame taking up its
 space."
   (let* ((head (frame-head group frame))

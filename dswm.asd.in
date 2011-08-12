@@ -49,12 +49,12 @@
                (:file "iresize")
                (:file "bindings")
                (:file "events")
-               (:file "help")
                (:file "fdump")
                (:file "time")
                (:file "mode-line")
                (:file "color")
                (:file "module")
+               (:file "help")
                (:file "dswm")
 ))
 

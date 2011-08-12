@@ -214,12 +214,12 @@ than the root window's width and height."
 ;;;
 
 (defun focus-next-window (group)
-  (focus-forward group (sort-windows group)))
+  (focus-forward group (sort-windows-by-number group)))
 
 (defun focus-prev-window (group)
   (focus-forward group
                  (reverse
-                  (sort-windows group))))
+                  (sort-windows-by-number group))))
 
 (defcommand (next tile-group) () ()
   "Go to the next window in the window list."
@@ -315,12 +315,12 @@ current frame and raise it."
 (defcommand (pull-hidden-next tile-group) () ()
 "Pull the next hidden window into the current frame."
   (let ((group (current-group)))
-    (focus-forward group (sort-windows group) t (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
+    (focus-forward group (sort-windows-by-number group) t (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
 
 (defcommand (pull-hidden-previous tile-group) () ()
 "Pull the next hidden window into the current frame."
   (let ((group (current-group)))
-    (focus-forward group (nreverse (sort-windows group)) t (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
+    (focus-forward group (nreverse (sort-windows-by-number group)) t (lambda (w) (not (eq (frame-window (window-frame w)) w))))))
 
 (defcommand (pull-hidden-other tile-group) () ()
 "Pull the last focused, hidden window into the current frame."

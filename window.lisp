@@ -49,6 +49,7 @@
    (parent                    :accessor window-parent)
    (title   :initarg :title   :accessor window-title)
    (user-title :initform nil  :accessor window-user-title)
+   (tags    :initform nil     :accessor window-tags)
    (class   :initarg :class   :accessor window-class)
    (type    :initarg :type    :accessor window-type)
    (res     :initarg :res     :accessor window-res)
@@ -418,23 +419,25 @@ _NET_WM_STATE_DEMANDS_ATTENTION set"
         (setf (gethash ,attr (window-plist ,win))) ,val))))
 
 (defun sort-windows (group)
-  "Return a copy of the screen's window list sorted by number."
-  ;;(sort1 (group-windows group) '< :key 'window-number)
-  ;;Experimental windows sorting
+  "Return a copy of the screen's window list sorted by usage (emacs-like behavior)"
   (let ((win-list
 	 (sort1 (group-windows group) '< :key 'window-state)))
     (cond
      ((< 2 (length win-list))
       (cons (cadr win-list)
     	    (cons (car win-list) (cddr win-list))))
-    ((> 2 (length win-list))
-     win-list)
-    (t
-     (reverse win-list)))))
+     ((> 2 (length win-list))
+      win-list)
+     (t
+      (reverse win-list)))))
+
+(defun sort-windows-by-number (group)
+  "Return a copy of the screen's window list sorted by number."
+  (sort1 (group-windows group) '< :key 'window-number))
 
 (defun marked-windows (group)
   "Return the marked windows in the specified group."
-  (loop for i in (sort-windows group)
+  (loop for i in (sort-windows-by-number group)
         when (window-marked i)
         collect i))
 
@@ -996,7 +999,7 @@ is using the number, then the windows swap numbers. Defaults to current group."
 (defcommand repack-window-numbers (&optional preserved) ()
   "Ensure that used window numbers do not have gaps; ignore PRESERVED window numbers."
   (let* ((group (current-group))
-	 (windows (sort-windows group)))
+	 (windows (sort-windows-by-number group)))
     (loop for w in windows
 	  do (unless (find (window-number w) preserved)
 	       (setf

@@ -29,7 +29,7 @@ core.lisp command.lisp menu.lisp screen.lisp head.lisp group.lisp	\
 window.lisp floating-group.lisp tile-window.lisp window-placement.lisp	\
 message-window.lisp selection.lisp user.lisp iresize.lisp		\
 bindings.lisp events.lisp help.lisp fdump.lisp mode-line.lisp		\
-time.lisp color.lisp module.lisp dswm.lisp version.lisp
+time.lisp color.lisp module.lisp dswm.lisp
 
 all: deps dswm dswm.info
 

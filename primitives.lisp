@@ -848,7 +848,7 @@ Note, a prefix number can be used to crop the argument to a specified
 size. For instance, @samp{%20t} crops the window's title to 20
 characters.")
 
-(defvar *window-info-format* "%wx%h %n (%t)"
+(defvar *window-info-format* (format nil "Size~15t:~t%wx%h~%Window number~15t:~t%n~%Title~15t:~t%t)")
   "The format used in the info command. @xref{*window-format*} for formatting details.")
 
 (defvar *group-formatters* '((#\n group-map-number)

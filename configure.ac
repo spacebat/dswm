@@ -102,7 +102,6 @@ fi
 # Checks for library functions.
 AC_OUTPUT(Makefile)
 AC_OUTPUT(make-image.lisp)
-AC_OUTPUT(version.lisp)
 AC_OUTPUT(module.lisp)
 AC_OUTPUT(help.lisp)
 AC_OUTPUT(dswm.desktop)
