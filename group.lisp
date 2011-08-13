@@ -354,7 +354,7 @@ groups and vgroups commands."
 (defcommand gnew-with-window (name) ((:string "Enter Group Name: "))
   "Run shell command in new group with same name with command"
   (gnewbg name)
-  (gmove name))
+  (gselect-with-window name))
 
 (defcommand gnewbg (name) ((:string "Enter Group Name: "))
   "Create a new group but do not switch to it."
@@ -363,19 +363,19 @@ groups and vgroups commands."
 
 (defcommand gnext () ()
   "Cycle to the next group in the group list."
-  (if (eq (group-number (current-group)) 0)
+  (if (eq (current-group) *scratchpad-group*)
       (group-forward (nth 1 (screen-groups (current-screen)))
 		     (sort-groups (current-screen)))
-    (group-forward (current-group)
-		   (sort-groups (current-screen)))))
+      (group-forward (current-group)
+		     (sort-groups (current-screen)))))
 
 (defcommand gprev () ()
   "Cycle to the previous group in the group list."
-  (if (eq (group-number (current-group)) 0)
+  (if (eq (current-group) *scratchpad-group*)
       (group-forward (nth 1 (screen-groups (current-screen)))
 		     (reverse (sort-groups (current-screen))))
-    (group-forward (current-group)
-		   (reverse (sort-groups (current-screen))))))
+      (group-forward (current-group)
+		     (reverse (sort-groups (current-screen))))))
 
 (defcommand gnext-with-window () ()
   "Cycle to the next group in the group list, taking the current
@@ -393,9 +393,11 @@ window along."
   "Go back to the last group."
   (let ((groups (screen-groups (current-screen))))
     (when (> (length groups) 1)
-      (if (eq (group-number (current-group)) 0)
+      (if (or
+	   (eq (current-group) *scratchpad-group*)
+	   (eq (nth 1 groups) *scratchpad-group*))
 	  (switch-to-group (nth 2 groups))
-	(switch-to-group (nth 1 groups))))))
+	  (switch-to-group (nth 1 groups))))))
 
 (defcommand grename (name) ((:string "New name for group: "))
   "Rename the current group."

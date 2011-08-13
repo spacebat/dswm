@@ -1,4 +1,4 @@
-LISP=/usr/bin/sbcl
+LISP=/usr/local/bin/sbcl
 
 clisp_BUILDOPTS=-K full -on-error exit ./make-image.lisp
 sbcl_BUILDOPTS=--load ./make-image.lisp
