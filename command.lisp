@@ -539,7 +539,7 @@ know lisp very well. One might put the following in one's rc file:
   (loop for i in commands do
         (eval-command i)))
 
-(defcommand colon (&optional initial-input) (:rest)
+(defcommand colon (&optional initial-input) (:rest "Enter DSWM command: ")
   "Read a command from the user. @var{initial-text} is optional. When
 supplied, the text will appear in the prompt."
   (let ((cmd (completing-read (current-screen) ": " (all-commands) :initial-input (or initial-input "") :require-match t)))

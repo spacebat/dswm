@@ -615,7 +615,7 @@ and bottom_end_x."
 
 (defun find-free-window-number (group)
   "Return a free window number for GROUP. Begining from '1'"
-  (find-free-number (mapcar 'window-number (group-windows group)) 0))
+  (find-free-number (mapcar 'window-number (group-windows group)) 1))
 
 (defun reparent-window (screen window)
   ;; apparently we need to grab the server so the client doesn't get
@@ -935,7 +935,7 @@ window. Default to the current window. if
 ; Emacs-like
 (defcommand-alias title rename-frame)
 
-(defcommand select-window (query) ((:window-name "Select: "))
+(defcommand select-window (query) ((:window-name "Select window: "))
   "Switch to the first window that starts with @var{query}."
   (let (match)
     (labels ((match (win)

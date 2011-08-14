@@ -392,7 +392,7 @@ window along."
 (defcommand gother () ()
   "Go back to the last group."
   (let ((groups (screen-groups (current-screen))))
-    (when (> (length groups) 1)
+    (when (> (length groups) 2)
       (if (or
 	   (eq (current-group) *scratchpad-group*)
 	   (eq (nth 1 groups) *scratchpad-group*))
