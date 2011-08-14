@@ -140,7 +140,11 @@
 (defmethod group-add-window ((group float-group) window &key &allow-other-keys)
   (change-class window 'float-window)
   (float-window-align window)
-  (focus-window window))
+;  (focus-window window))
+  ;; only focus windows who accept focus, just raise other ones
+  (if (eq :off (xlib:wm-hints-input (window-hints window)))
+      (raise-window window)
+      (focus-window window)))
 
 (defun &float-focus-next (group)
   (if (group-windows group)
@@ -182,7 +186,11 @@
 
 (defmethod group-raise-request ((group float-group) window type)
   (declare (ignore type))
-  (focus-window window))
+  ;;  (focus-window window))
+  ;; only focus windows who accept focus, just raise other ones
+  (if (eq :off (xlib:wm-hints-input (window-hints window)))
+      (raise-window window)
+      (focus-window window)))
 
 (defmethod group-lost-focus ((group float-group))
   (&float-focus-next group))

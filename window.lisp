@@ -59,7 +59,8 @@
    (normal-hints :initarg :normal-hints :accessor window-normal-hints)
    (marked  :initform nil     :accessor window-marked)
    (plist   :initarg :plist   :accessor window-plist)
-   (fullscreen :initform nil  :accessor window-fullscreen)))
+   (fullscreen :initform nil  :accessor window-fullscreen)
+   (hints :initform nil :initarg :wm-hints :accessor window-hints)))
 
 (defmethod print-object ((object window) stream)
   (format stream "#S(~a ~s #x~x)" (type-of object) (window-name object) (window-id object)))

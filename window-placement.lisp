@@ -39,6 +39,7 @@
    :res (xwin-res-name xwin)
    :role (xwin-role xwin)
    :type (xwin-type xwin)
+   :wm-hints (xlib:wm-hints xwin)
    :normal-hints (get-normalized-normal-hints xwin)
    :state +iconic-state+
    :plist (make-hash-table)
