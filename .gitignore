@@ -28,3 +28,7 @@ dswm.texi
 dswm.asd
 modules/swank.lisp
 dswm
+Makefile
+config.status
+configure
+
