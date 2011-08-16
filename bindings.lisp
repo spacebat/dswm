@@ -210,6 +210,7 @@ from most specific groups to most general groups.")
   (kbd "o")     "gother"
   (kbd "'")     "gselect"
   (kbd "\"")    "grouplist"
+  (kbd "b")     "grouplist"
   (kbd "m")     "gmove"
   (kbd "M")     "gmove-marked"
   (kbd "k")     "gkill"
