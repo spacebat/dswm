@@ -298,7 +298,7 @@
 
 ;; Commands for dump and restore desktop
 
-(defcommand restore-from-file (file) ((:rest "Restore From File: "))
+(defcommand restore-from-file (file) ((:rest "Restore from what file? "))
   "Restores screen, groups, or frames from named file, depending on file's contents."
   (let ((dump (read-dump-from-file file)))
     (typecase dump
@@ -330,7 +330,7 @@
 ;;   )
 
 (-st
- (defcommand dump-screen-to-file (file) ((:file "Dump To File: "))
+ (defcommand dump-screen-to-file (file) ((:file "Dump to what file? "))
    "Dumps the frames of all groups of the current screen to the named file"
    (forget-remember-desktop
     (dump-screen (current-screen) :to-fs t :file file)
@@ -339,8 +339,7 @@
  )
 
 (-st
- (defcommand dump-desktop-to-file (file)
-   ((:file "Enter filename to dump: "))
+ (defcommand dump-desktop-to-file (file) ((:file "Dump to what file? "))
    "Dumps the frames of all groups of all screens to the named file"
    (forget-remember-desktop
     (dump-desktop :to-fs t :file file)

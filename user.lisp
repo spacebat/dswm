@@ -167,7 +167,8 @@ with base. Automagically update the cache."
 (defun complete-filename (base)
   "Return the list of files in ")
 
-(defcommand run-shell-command (cmd &optional collect-output-p) ((:shell "Enter command: "))
+(defcommand run-shell-command (cmd &optional collect-output-p)
+  ((:shell "Input command to run program: "))
   "Run the specified shell command. If @var{collect-output-p} is @code{T}
 then run the command synchonously and collect the output. Be
 careful. If the shell command doesn't return, it will hang DSWM. In
@@ -185,7 +186,7 @@ such a case, kill the shell command to resume DSWM."
 	   (run-shell-command (car commands))
 	   (eval (cons 'run-shell-commands (cdr commands))))))
 
-(defcommand eval-line (cmd) ((:rest "Eval: "))
+(defcommand eval-line (cmd) ((:rest "Input S-expression to eval it: "))
   "Evaluate the s-expression and display the result(s)."
   (handler-case
       (message "^20~{~a~^~%~}"
@@ -198,7 +199,8 @@ such a case, kill the shell command to resume DSWM."
 
 (defcommand-alias run run-shell-command)
 
-(defcommand run-in-terminal (cmd) ((:shell "Enter command: "))
+(defcommand run-in-terminal (cmd)
+  ((:shell "Input shell command to run it in terminal: "))
   "Run command in terminal"
   (run-shell-command (concat *terminal* " -e " cmd)))
 
@@ -213,7 +215,7 @@ such a case, kill the shell command to resume DSWM."
   (when (screen-current-window screen)
     (send-fake-key (screen-current-window screen) key)))
 
-(defcommand meta (key) ((:key "Key: "))
+(defcommand meta (key) ((:key "Input key to send: "))
 "Send a fake key to the current window. @var{key} is a typical DSWM key, like @kbd{C-M-o}."
   (send-meta-key (current-screen) key))
 

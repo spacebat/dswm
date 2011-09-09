@@ -227,7 +227,7 @@ inn - for international
                    (car *google-translate-languages*) "|"
                    (cadr *google-translate-languages*) "|" what "\"")))
 
-(defcommand web-jump (url) ((:string "Enter URL: "))
+(defcommand web-jump (url) ((:string "Input URL to jump to: "))
   "Open URL in default web-browser"
   (run-shell-command (concatenate 'string *browser* " " url)))
 
@@ -320,9 +320,9 @@ inn - for international
 
 
 (defcommand hb-add (name browser url open-p)
-  ((:string "Enter hyperbookmark name: ")
-   (:hb-browser "With what browser open? ")
-   (:hb-url "Enter URL to go to ")
+  ((:string "Input hyperbookmark name: ")
+   (:hb-browser "With what browser to open it? ")
+   (:hb-url "Input URL to jump to: ")
    (:y-or-n "Open right now? "))
   (if
    (null (find-hyperbookmark-by-name name))
@@ -337,15 +337,14 @@ inn - for international
          (hb-open name)))
    (message "hyperbookmark '~a' already exists" name)))
 
-(defcommand hb-remove (name) ((:hyperbookmark "Enter hyperbookmark
-  name to remove: "))
+(defcommand hb-remove (name) ((:hyperbookmark "Select hyperbookmark name to remove: "))
   (dswm::remove-from-list
    *hyperbookmarks-list*
    (find-hyperbookmark-by-name name))
   (dump-hyperbookmarks))
 
 (defcommand hb-open (name)
-  ((:hyperbookmark "Enter hyperbookmark name: "))
+  ((:hyperbookmark "Input hyperbookmark name: "))
   (let ((bookmark (find-hyperbookmark-by-name name)))
     (run-shell-command
      (dswm::concat (hyperbookmark-browser bookmark)
@@ -373,9 +372,5 @@ inn - for international
 
 ;; Initialization
 (hb-reload)
-(add-to-list *hyperbookmarks-list*
-             #S(DSWM-USER::HYPERBOOKMARK :NAME "dswm"
-                                         :BROWSER *browser*
-                                         :URL"http://dss-de.sourceforge.net/doku.php/dswm:en:index"))
 ;;; web.lisp ends here
 

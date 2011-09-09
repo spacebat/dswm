@@ -166,7 +166,7 @@ License: GNU GPL v.2^b
     (message-no-timeout "~{~a~^~%~}"
                         (columnize data cols))))
 
-(defcommand describe-key (keys) ((:key-seq "Describe Key: "))
+(defcommand describe-key (keys) ((:key-seq "Type key to describe: "))
 "Either interactively type the key sequence or supply it as text. This
 command prints the command bound to the specified key sequence."
   (let ((cmd (loop for map in (top-maps)
@@ -174,24 +174,24 @@ command prints the command bound to the specified key sequence."
                    when cmd return cmd))
 	(*message-window-gravity* :center))
     (if cmd
-        (message "~{~a~^ ~} is bound to \"~a\"." (mapcar 'print-key keys)  cmd)
+        (message "Key ~{~a~^ ~}~%is bound to\"~a\" command." (mapcar 'print-key keys)  cmd)
         (message "~{~a~^ ~} is not bound." (mapcar 'print-key keys)))))
 
-(defcommand describe-variable (var) ((:variable "Describe Variable: "))
+(defcommand describe-variable (var) ((:variable "Input variable name to describe: "))
 "Print the online help associated with the specified variable."
   (let ((*message-window-gravity* :center))
   (message-no-timeout "~a"
                       (with-output-to-string (s)
                         (describe var s)))))
 
-(defcommand describe-function (fn) ((:function "Describe Function: "))
+(defcommand describe-function (fn) ((:function "Input function name to describe: "))
 "Print the online help associated with the specified function."
   (let ((*message-window-gravity* :center))
   (message-no-timeout "~a"
                       (with-output-to-string (s)
                         (describe fn s)))))
 
-(defcommand describe-command (com) ((:command "Describe Command: "))
+(defcommand describe-command (com) ((:command "Input command to describe: "))
   "Print the online help associated with the specified command."
   (let* ((deref (dereference-command-symbol com))
          (struct (get-command-structure com nil))
@@ -205,7 +205,7 @@ command prints the command bound to the specified key sequence."
            (message-no-timeout "\"~a\" is an alias for the command \"~a\":~%~a" (command-alias-from deref) (command-name struct)
                                (documentation (command-name struct) 'function))))))
 
-(defcommand where-is (cmd) ((:command "Where is command: "))
+(defcommand where-is (cmd) ((:command "Input command to detect to wat key it bind: "))
 "Print the key sequences bound to the specified command."
 (let ((bindings (loop for map in (top-maps) append (search-kmap cmd map)))
       (*message-window-gravity* :center))

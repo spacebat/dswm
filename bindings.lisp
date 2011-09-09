@@ -85,18 +85,18 @@ from most specific groups to most general groups.")
   (kbd "C-c") "terminal"
   (kbd "e")   "emacs"
   (kbd "C-e") "emacs"
-  (kbd "b")   "windowlist" ;+
-  (kbd "C-b") "windows" ;+
-  (kbd "C-B") "browser"
-  (kbd "B")   "browser"
+  (kbd "b")   "browser"
+  (kbd "C-b") "browser"
+  (kbd "C-B") "banish"
+  (kbd "B") "banish"
   (kbd "a")   "time"
   (kbd "C-a") "time"
-  (kbd ";")   "colon"
-  (kbd ":")   "eval"
   (kbd "!")   "exec"
   (kbd "t")   "run-in-terminal"
   (kbd "C-g") "abort"
   *escape-fake-key* "send-escape"
+  (kbd ";")   "colon"
+  (kbd ":")   "eval"
   (kbd "v")   "version"
   (kbd "m")   "move-window-to-frame"
   (kbd "C-m") "lastmsg"
@@ -120,8 +120,8 @@ from most specific groups to most general groups.")
 
 (fill-keymap *group-root-map*
   (kbd "C-u") "next-urgent"
-  ;; (kbd "w")   "windows" ;+
-  ;; (kbd "C-w") "windows" ;+
+  (kbd "w")   "windows"
+  (kbd "C-w") "windows"
   (kbd "k")   "delete"
   (kbd "C-k") "delete"
   (kbd "K")   "kill"
@@ -210,7 +210,6 @@ from most specific groups to most general groups.")
   (kbd "o")     "gother"
   (kbd "'")     "gselect"
   (kbd "\"")    "grouplist"
-  (kbd "b")     "grouplist"
   (kbd "m")     "gmove"
   (kbd "M")     "gmove-marked"
   (kbd "k")     "gkill"
@@ -243,7 +242,8 @@ current window. To exit command mode, type @key{C-g}."
   (message "Press C-g to exit command-mode.")
   (push-top-map *root-map*))
 
-(defcommand set-prefix-key (key) ((:key "Key: "))
+(defcommand set-prefix-key (key)
+  ((:key "What key do you want to set as prefix? "))
   "Change the dswm prefix key to KEY.
 @example
 \(dswm:set-prefix-key (dswm:kbd \"C-M-H-s-z\"))
@@ -266,8 +266,8 @@ great example."
 (defcommand-alias escape set-prefix-key)
 
 (defcommand bind (key command)
-                 ((:string "Key Chord: ")
-                  (:rest "Command: "))
+                 ((:string "Key chord to bind on: ")
+                  (:rest "Command to bind: "))
   "Hang a key binding off the escape key."
   (define-key *root-map* (kbd key) command))
 

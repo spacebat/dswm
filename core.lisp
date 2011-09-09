@@ -146,14 +146,14 @@
 (defmacro add-dswm-behavior (shortname-if shortname-if-not name)
   "Macro for add behavior-specific macros"
   `(progn
-     (defmacro ,shortname-if (body)
+     (defun ,shortname-if (body)
        (let ((a ,name))
-	 `(if (member ,a *mode* :test 'equal)
-	      ,body t)))
-     (defmacro ,shortname-if-not (body)
+	 (if (member a *mode* :test 'equal)
+	      body t)))
+     (defun ,shortname-if-not (body)
        (let ((a ,name))
-	 `(if (not (member ,a *mode* :test 'equal))
-	      ,body t)))))
+	 (if (not (member a *mode* :test 'equal))
+	      body t)))))
 
 (add-dswm-behavior +st -st "sesstion-transparent") ;; add sesstion transparent behavior
 (add-dswm-behavior +i -i "interactive") ;; add interactive behavior
@@ -176,11 +176,3 @@
 	(if (not (null message-if-false))
 	    `(error ,message-if-false)
 	  nil))))
-
-
-
-
-
-
-
-

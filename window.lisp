@@ -934,7 +934,7 @@ window. Default to the current window. if
       (message "No Focused Window")))
 
 ; Emacs-like
-(defcommand-alias title rename-frame)
+(defcommand-alias title rename-window)
 
 (defcommand select-window (query) ((:window-name "Select window: "))
   "Switch to the first window that starts with @var{query}."
@@ -950,7 +950,7 @@ window. Default to the current window. if
 
 (defcommand-alias select select-window)
 
-(defcommand select-window-by-name (name) ((:window-name "Select: "))
+(defcommand select-window-by-name (name) ((:window-name "Select window: "))
   "Switch to the first window whose name is exactly @var{name}."
   (let ((win (find name (group-windows (current-group))
                    :test #'string= :key #'window-name)))
@@ -958,7 +958,7 @@ window. Default to the current window. if
       (group-focus-window (current-group) win))))
 
 (defcommand select-window-by-number (num &optional (group (current-group)))
-  ((:window-number "Select: "))
+  ((:window-number "Select window: "))
   "Find the window with the given number and focus it in its frame."
   (labels ((match (win)
 		  (= (window-number win) num)))
@@ -1025,7 +1025,9 @@ override the default window formatting."
             (throw 'error :abort)))))
 
 
-(defcommand window-send-string (string &optional (window (current-window))) ((:rest "Insert: "))
+(defcommand window-send-string (string &optional (window
+						  (current-window)))
+  ((:rest "Insert string to send: "))
   "Send the string of characters to the current window as if they'd been typed."
   (when window
     (map nil (lambda (ch)

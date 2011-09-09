@@ -1053,8 +1053,8 @@ jump to that frame."
   (let ((group (current-group)))
     (focus-frame group frame-number)))
 
-(defcommand (resize tile-group) (width height) ((:number "+ Width: ")
-                                                (:number "+ Height: "))
+(defcommand (resize tile-group) (width height) ((:number "Input new width: ")
+                                                (:number "Input new height: "))
   "Resize the current frame by @var{width} and @var{height} pixels"
   (let* ((group (current-group))
          (f (tile-group-current-frame group)))
@@ -1135,7 +1135,7 @@ jump to that frame."
           (pull-window window new-frame)
           (focus-frame group new-frame)))))
 
-(defcommand (move-focus tile-group) (dir) ((:direction "Direction: "))
+(defcommand (move-focus tile-group) (dir) ((:direction "To what direction? "))
 "Focus the frame adjacent to the current one in the specified
 direction. The following are valid directions:
 @table @asis
@@ -1146,7 +1146,7 @@ direction. The following are valid directions:
 @end table"
   (move-focus-and-or-window dir))
 
-(defcommand (move-window tile-group) (dir) ((:direction "Direction: "))
+(defcommand (move-window tile-group) (dir) ((:direction "To what direction? "))
 "Just like move-focus except that the current is pulled along."
   (move-focus-and-or-window dir t))
 
@@ -1177,6 +1177,6 @@ direction. The following are valid directions:
         (balance-frames-internal (current-group) tree)
         (message "There's only one frame."))))
 
-(defcommand (move-window-to-frame tile-group) (frame-number) ((:frame "Frame number: "))
+(defcommand (move-window-to-frame tile-group) (frame-number) ((:frame "Move to what frame? "))
   "Just like move-focus except that the current is pulled along."
   (move-focus-and-or-window-to frame-number t))

@@ -52,6 +52,19 @@
           *key-press-hook*
           *root-click-hook*
           *mode-line-click-hook*
+	  *mode-line-background-color*
+	  *mode-line-border-color*
+	  *mode-line-border-width*
+	  *mode-line-foreground-color*
+	  *mode-line-pad-x*
+	  *mode-line-pad-y*
+	  *mode-line-position*
+	  *mode-line-timeout*
+	  *hidden-window-color*
+	  *screen-mode-line-format*
+	  *screen-mode-line-formatters*
+	  *screen-widget-line-format*
+	  *screen-window-list-line-format*
           *display*
           *shell-program*
           *maxsize-border-width*
@@ -239,6 +252,93 @@ window, the button clicked, and the x and y of the pointer.")
 (defvar *mode-line-click-hook* '()
   "Called whenever the mode-line is clicked. It is called with 4 arguments,
 the mode-line, the button clicked, and the x and y of the pointer.")
+
+(defvar *mode-line-position* :top
+  "Specifies where the mode line is displayed. Valid values are :top and :bottom.")
+
+(defvar *mode-line-border-width* 1
+  "Specifies how thick the mode line's border will be. Integer value.")
+
+(defvar *mode-line-pad-x* 5
+  "Specifies the number of padding pixels between the text and the side of the mode line. Integer value.")
+
+(defvar *mode-line-pad-y* 1
+  "The number of padding pixels between the modeline text and the top/bottom of the modeline? Integer value.")
+
+(defvar *mode-line-background-color* "SteelBlue"
+  "The mode line background color.")
+
+(defvar *mode-line-foreground-color* "White"
+  "The mode line foreground color.")
+
+(defvar *mode-line-border-color* "Black"
+  "The mode line border color.")
+
+(defvar *hidden-window-color* "^5*"
+  "Color command for hidden windows when using the
+fmt-head-window-list-hidden-windows formatter. To disable coloring
+hidden windows, set this to an empty string.")
+
+(defvar *screen-widget-line-format* "%d[%g]")
+
+(defvar *screen-window-list-line-format* "%U%W")
+
+(defvar *screen-mode-line-format* nil
+  "DEPRECATED. Use *screen-widget-line-format* and *screen-window-list-line-format*
+This variable describes what will be displayed on the modeline for each screen.
+Turn it on with the function TOGGLE-MODE-LINE or the mode-line command.
+
+It is a list where each element may be a string, a symbol, or a list.
+
+For a symbol its value is used.
+
+For a list of the form (:eval FORM) FORM is evaluated and the
+result is used as a mode line element.
+
+If it is a string the string is printed with the following formatting
+options:
+
+@table @asis
+@item %h
+List the number of the head the mode-line belongs to
+
+@item %w
+List all windows in the current group windows using @var{*window-format*}
+
+@item %W
+List all windows on the current head of the current group using
+@var{*window-format*}
+
+@item %g
+List the groups using @var{*group-format*}
+@end table")
+
+(defvar *mode-line-timeout* 1
+  "The modeline updates after each command, when a new window appears or
+an existing one disappears, and on a timer. This variable controls how
+many seconds elapse between each update. If this variable is changed
+while the modeline is visible, you must toggle the modeline to update
+timer.")
+
+(defvar *mode-line-timer* nil
+  "The timer that updates the modeline
+FIXME: do it around builtin timers")
+
+(defvar *mode-line-blinker* nil
+  "Variable for blink urgent windows, or widgets")
+
+(defvar *screen-mode-line-formatters* '((#\w fmt-window-list)
+                                        (#\g fmt-group-list)
+                                        (#\h fmt-head)
+                                        (#\n fmt-group)
+                                        (#\W fmt-head-window-list)
+                                        (#\u fmt-urgent-window-list)
+					(#\U fmt-blink-urgent-window-list)
+                                        (#\v fmt-head-window-list-hidden-windows)
+                                        (#\d fmt-modeline-time))
+  "An alist containing format character format function pairs for
+formatting screen mode-lines. functions are passed the screen's
+current group.")
 
 ;; Data types and globals used by dswm
 
@@ -474,7 +574,7 @@ exist, in which case they go into the current group.")
    (frame-outline-gc :initform nil :accessor screen-frame-outline-gc)
    ;; color contexts
    (message-cc :initform nil :accessor screen-message-cc)
-   (mode-line-cc :initform nil :accessor screen-mode-line-cc)
+
    ;; color maps
    (color-map-normal :initform nil :accessor screen-color-map-normal)
    (color-map-bright :initform nil :accessor screen-color-map-bright)

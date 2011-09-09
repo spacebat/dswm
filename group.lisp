@@ -341,7 +341,7 @@ current window of the current group to the new one."
       (move-window-to-group win next)
       (really-raise-window win))))
 
-(defcommand gnew (name) ((:string "Enter Group Name: "))
+(defcommand gnew (name) ((:string "Input group name: "))
   "Create a new group with the specified name. The new group becomes the
 current group. If @var{name} begins with a dot (``.'') the group new
 group will be created in the hidden state. Hidden groups have group
@@ -351,12 +351,12 @@ groups and vgroups commands."
       (+i (run-commands "gnew"))
     (+st (dump-desktop))))
 
-(defcommand gnew-with-window (name) ((:string "Enter Group Name: "))
+(defcommand gnew-with-window (name) ((:string "Input group name: "))
   "Run shell command in new group with same name with command"
   (gnewbg name)
   (gselect-with-window name))
 
-(defcommand gnewbg (name) ((:string "Enter Group Name: "))
+(defcommand gnewbg (name) ((:string "Input group name: "))
   "Create a new group but do not switch to it."
   (if (not (add-group (current-screen) name :background t))
       (+i (run-commands "gnewbg"))))
@@ -399,7 +399,7 @@ window along."
 	  (switch-to-group (nth 2 groups))
 	  (switch-to-group (nth 1 groups))))))
 
-(defcommand grename (name) ((:string "New name for group: "))
+(defcommand grename (name) ((:string "Input new name for group: "))
   "Rename the current group."
   (let ((group (current-group)))
     (cond ((find-group (current-screen) name)
@@ -439,13 +439,6 @@ window along."
                         (if *list-hidden-groups* groups (non-hidden-groups groups)))))
     (echo-string-list screen names)))
 
-;; (defcommand groups (&optional (fmt *group-format*)) (:rest)
-;; "Display the list of groups with their number and
-;; name. @var{*group-format*} controls the formatting. The optional
-;; argument @var{fmt} can be used to override the default group
-;; formatting."
-;;   (echo-groups (current-screen) fmt))
-
 (defcommand vgroups (&optional gfmt wfmt) (:string :rest)
 "Like @command{groups} but also display the windows in each group. The
 optional arguments @var{gfmt} and @var{wfmt} can be used to override
@@ -454,7 +447,7 @@ the default group formatting and window formatting, respectively."
                (or gfmt *group-format*)
                t (or wfmt *window-format*)))
 
-(defcommand gselect (to-group) ((:group "Select Group: "))
+(defcommand gselect (to-group) ((:group "Select group: "))
   "Select the first group that starts with
 @var{substring}. @var{substring} can also be a number, in which case
 @command{gselect} selects the group with that number."
@@ -475,10 +468,10 @@ the default group formatting and window formatting, respectively."
     (when group
       (switch-to-group group))))
 
-;; To Command groups is deprecated as not functional (experimental change)
+;; To Command groups is deprecated as not functional
 (defcommand-alias groups grouplist)
 
-(defcommand gselect-with-window (group) ((:group "To Group: "))
+(defcommand gselect-with-window (group) ((:group "Select group: "))
   "Move the current window to the specified group."
   (when (and group
              (current-window))
@@ -486,7 +479,7 @@ the default group formatting and window formatting, respectively."
 
 (defcommand-alias gmove gselect-with-window)
 
-(defcommand gselect-with-marked-window (group) ((:group "To Group: "))
+(defcommand gselect-with-marked-window (group) ((:group "Select group: "))
   "move the marked windows to the specified group."
   (when group
     (let ((current-group (current-group)))
@@ -519,7 +512,7 @@ The windows will be moved to group \"^B^2*~a^n\"
 	  (message "Canceled"))
         (message "There's only one group left"))))
 
-(defcommand gmerge (from) ((:group "From Group: "))
+(defcommand gmerge (from) ((:group "From group: "))
 "Merge @var{from} into the current group. @var{from} is not deleted."
   (if (eq from (current-group))
       (progn
@@ -535,7 +528,7 @@ The windows will be moved to group \"^B^2*~a^n\"
   (gselect group)
   (run-shell-command command))
 
-(defcommand grun-new (command) ((:shell "Enter command: "))
+(defcommand grun-new (command) ((:shell "Enter command to run program: "))
   "Run shell command in new tile group with same name with command"
   ;; FIXME: need to run, ignoring window placement rules
   (gnew command)

@@ -281,7 +281,7 @@ frame."
         (message "No other window."))))
 
 (defcommand (pull-window-by-number tile-group) (n &optional (group (current-group)))
-                                               ((:window-number "Pull: "))
+                                               ((:window-number "Select window number to pull: "))
   "Pull window N from another frame into the current frame and focus it."
   (let ((win (find n (group-windows group) :key 'window-number :test '=)))
     (when win
@@ -337,7 +337,7 @@ current frame and raise it."
       (focus-frame (window-group win1) f2))))
 
 (defcommand (exchange-direction tile-group) (dir &optional (win (current-window)))
-    ((:direction "Direction: "))
+    ((:direction "To what direction? "))
   "Exchange the current window (by default) with the top window of the frame in specified direction.
 @table @asis
 @item up
@@ -367,7 +367,7 @@ with broken (non-NETWM) fullscreen implemenations, such as any program
 using SDL."
   (update-fullscreen (current-window) 2))
 
-(defcommand (gravity tile-group) (gravity) ((:gravity "Gravity: "))
+(defcommand (gravity tile-group) (gravity) ((:gravity "Gravity to where? "))
   "Set a window's gravity within its frame. Gravity controls where the
 window will appear in a frame if it is smaller that the
 frame. Possible values are:
@@ -533,7 +533,7 @@ directory and files"))
 
 (-st
  (defcommand (dump-window-placement-rules tile-group) (file)
-   ((:file "Enter filename to dump: "))
+   ((:file "Input filename to dump: "))
    "Dump *window-placement-rules* to FILE."
    (dump-to-file *window-placement-rules* file))
  )

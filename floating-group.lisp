@@ -281,23 +281,23 @@
   (declare (ignore x y where))
   )
 
-(defcommand gnew-float (name) ((:rest "Group Name: "))
+(defcommand gnew-float (name) ((:rest "Input group name: "))
 "Create a floating window group with the specified name and switch to it."
   (add-group (current-screen) name :type 'float-group))
 
-(defcommand gnewbg-float (name) ((:rest "Group Name: "))
+(defcommand gnewbg-float (name) ((:rest "Input group name: "))
 "Create a floating window group with the specified name, but do not switch to it."
   (add-group (current-screen) name :background t :type 'float-group))
 
 ;; Experimental
-(defcommand grun-new-float (command) ((:shell "Enter command: "))
+(defcommand grun-new-float (command) ((:shell "Input command to run program: "))
   "Run shell command in new float group with same name with command"
   (check-type command string)
   (gnew-float command)
   (run-shell-command command))
 
-(defcommand gmove-new-float (groupname) ((:string "Enter groupname: "))
+(defcommand gmove-new-float (groupname) ((:string "Input group name: "))
   "Run shell command in new float group with same name with command"
   (check-type groupname string)
   (gnewbg-float groupname)
-  (gmove  groupname))
+  (gselect-with-marked-window groupname))

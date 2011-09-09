@@ -71,13 +71,13 @@
     (module-p (reverse *list-modules-dir*) name)))
 
 
-(defcommand add-modules-dir (dir) ((:string "Directory: "))
+(defcommand add-modules-dir (dir) ((:string "Input directory name: "))
   ;; TODO: define dswm type pathname with autocomplete and automatic
   ;; directories creation
     "Add the location of the contrib modules"
     (add-to-list *list-modules-dir* (string-as-directory dir)))
 
-(defcommand load-module (name) ((:module "Enter module name: "))
+(defcommand load-module (name) ((:module "Input module name: "))
   "Loads the contributed module with the given NAME."
   ;; FIXME: This should use ASDF in the future. And maybe there should
   ;; be an extra dswm-contrib repository.
