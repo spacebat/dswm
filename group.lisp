@@ -353,8 +353,10 @@ groups and vgroups commands."
 
 (defcommand gnew-with-window (name) ((:string "Input group name: "))
   "Run shell command in new group with same name with command"
-  (gnewbg name)
-  (gselect-with-window name))
+  (gnew name)
+  (let ((group (current-group)))
+    (gother)
+    (gselect-with-window name)))
 
 (defcommand gnewbg (name) ((:string "Input group name: "))
   "Create a new group but do not switch to it."
@@ -477,12 +479,10 @@ the default group formatting and window formatting, respectively."
              (current-window))
     (move-window-to-group (current-window) group)))
 
-
 (defcommand gselect-with-window (group) ((:group "Select group: "))
   "Move the current window to the specified group and switch to it."
-  (and (gmove group) gselect group))
-
-(defcommand-alias gmove gselect-with-window)
+  (gmove group)
+  (gselect group))
 
 (defcommand gmove-marked (group) ((:group "Select group: "))
   "move the marked windows to the specified group."
@@ -491,10 +491,6 @@ the default group formatting and window formatting, respectively."
       (dolist (i (marked-windows current-group))
         (setf (window-marked i) nil)
         (move-window-to-group i group)))))
-
-(defcommand gselect-with-marked-window (group) ((:group "Select group: "))
-  "Move the marked windows to the specified group and switch to it."
-  (and (gmove-marked group) gselect group))
 
 (defcommand gkill () ()
 "Kill the current group. All windows in the current group are migrated
