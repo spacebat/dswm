@@ -471,15 +471,20 @@ the default group formatting and window formatting, respectively."
 ;; To Command groups is deprecated as not functional
 (defcommand-alias groups grouplist)
 
-(defcommand gselect-with-window (group) ((:group "Select group: "))
+(defcommand gmove (group) ((:group "Select group: "))
   "Move the current window to the specified group."
   (when (and group
              (current-window))
     (move-window-to-group (current-window) group)))
 
+
+(defcommand gselect-with-window (group) ((:group "Select group: "))
+  "Move the current window to the specified group and switch to it."
+  (and (gmove group) gselect group))
+
 (defcommand-alias gmove gselect-with-window)
 
-(defcommand gselect-with-marked-window (group) ((:group "Select group: "))
+(defcommand gmove-marked (group) ((:group "Select group: "))
   "move the marked windows to the specified group."
   (when group
     (let ((current-group (current-group)))
@@ -487,7 +492,9 @@ the default group formatting and window formatting, respectively."
         (setf (window-marked i) nil)
         (move-window-to-group i group)))))
 
-(defcommand-alias gmove-marked gselect-with-marked-window)
+(defcommand gselect-with-marked-window (group) ((:group "Select group: "))
+  "Move the marked windows to the specified group and switch to it."
+  (and (gmove-marked group) gselect group))
 
 (defcommand gkill () ()
 "Kill the current group. All windows in the current group are migrated

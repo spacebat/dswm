@@ -285,6 +285,12 @@
 "Create a floating window group with the specified name and switch to it."
   (add-group (current-screen) name :type 'float-group))
 
+(defcommand gnew-float-with-window (name) ((:string "Input group name: "))
+  "Run shell command in new group with same name with command"
+  (gnew-float name)
+  (gother)
+  (gselect-with-window name))
+
 (defcommand gnewbg-float (name) ((:rest "Input group name: "))
 "Create a floating window group with the specified name, but do not switch to it."
   (add-group (current-screen) name :background t :type 'float-group))

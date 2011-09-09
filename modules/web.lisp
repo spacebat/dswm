@@ -370,6 +370,16 @@ inn - for international
         (message "Nothing to load")))
 
 
+;; Keybindings
+(defkeys-root
+    ("u" "hb-open")
+    ("M-s" "web-search")
+    ("M-w" "wiki-search")
+    ("M-d" "dict-search")
+    ("M-j" "web-jump")
+    ("M-g" "g-translate")
+)
+
 ;; Initialization
 (hb-reload)
 ;;; web.lisp ends here
