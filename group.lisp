@@ -356,7 +356,7 @@ groups and vgroups commands."
   (gnew name)
   (let ((group (current-group)))
     (gother)
-    (gselect-with-window name)))
+    (gselect-with-window group)))
 
 (defcommand gnewbg (name) ((:string "Input group name: "))
   "Create a new group but do not switch to it."

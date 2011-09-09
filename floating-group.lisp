@@ -290,7 +290,7 @@
   (gnew-float name)
   (let ((group (current-group)))
     (gother)
-    (gselect-with-window name)))
+    (gselect-with-window group)))
 
 (defcommand gnewbg-float (name) ((:rest "Input group name: "))
 "Create a floating window group with the specified name, but do not switch to it."
