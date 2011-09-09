@@ -288,8 +288,9 @@
 (defun restore-all ()
   "Restore all rules. Useful at startup"
   (progn
-    (restore-from-file
-     (data-dir-file "desktop" "rules"))
+    (when (file-exists-p (data-dir-file "desktop" "rules"))
+      (restore-from-file
+       (data-dir-file "desktop" "rules")))
     (setf *window-placement-rules*
 	  (read-dump-from-file
 	   (data-dir-file "window-placement" "rules")))
