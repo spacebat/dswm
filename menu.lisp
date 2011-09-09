@@ -149,10 +149,18 @@ backspace or F9), return it otherwise return nil"
   long as the user types lower-case characters."
   (let ((input-char (get-input-char key-seq)))
     (when input-char
-      (setf (menu-state-current-input menu)
-	    (concatenate 'string
-			 (menu-state-current-input menu)
-			 (string input-char)))
+      ;; (setf (menu-state-current-input menu)
+      ;; 	    (concatenate 'string
+      ;; 			 (menu-state-current-input menu)
+      ;; 			 (string input-char)))
+      (if (char= #\Backspace input-char)
+	  (setf (menu-state-current-input menu)
+		(subseq (menu-state-current-input menu)
+			0 (- (length (menu-state-current-input menu)) 1)))
+	(setf (menu-state-current-input menu)
+	      (concatenate 'string
+			   (menu-state-current-input menu)
+			   (string input-char))))
       (do* ((cur-pos 0 (1+ cur-pos))
 	    (rest-elem (menu-state-table menu)
 		       (cdr rest-elem))

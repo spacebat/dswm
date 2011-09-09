@@ -200,7 +200,7 @@ such a case, kill the shell command to resume DSWM."
 
 (defcommand run-in-terminal (cmd) ((:shell "Enter command: "))
   "Run command in terminal"
-  (run-shell-command (concat *terminal* "-e" cmd)))
+  (run-shell-command (concat *terminal* " -e " cmd)))
 
 (defcommand echo (string) ((:rest "Echo: "))
   "Display @var{string} in the message bar."

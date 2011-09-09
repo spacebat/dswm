@@ -140,7 +140,11 @@
 (defmethod group-add-window ((group float-group) window &key &allow-other-keys)
   (change-class window 'float-window)
   (float-window-align window)
-  (focus-window window))
+;  (focus-window window))
+  ;; only focus windows who accept focus, just raise other ones
+  (if (eq :off (xlib:wm-hints-input (window-hints window)))
+      (raise-window window)
+      (focus-window window)))
 
 (defun &float-focus-next (group)
   (if (group-windows group)
@@ -182,7 +186,11 @@
 
 (defmethod group-raise-request ((group float-group) window type)
   (declare (ignore type))
-  (focus-window window))
+  ;;  (focus-window window))
+  ;; only focus windows who accept focus, just raise other ones
+  (if (eq :off (xlib:wm-hints-input (window-hints window)))
+      (raise-window window)
+      (focus-window window)))
 
 (defmethod group-lost-focus ((group float-group))
   (&float-focus-next group))
@@ -281,23 +289,20 @@
   (declare (ignore x y where))
   )
 
-(defcommand gnew-float (name) ((:rest "Group Name: "))
-"Create a floating window group with the specified name and switch to it."
+(defcommand gnew-float (name) ((:rest "Enter Group Name: "))
+  "Create a floating window group with the specified name and switch to it."
   (add-group (current-screen) name :type 'float-group))
 
-(defcommand gnewbg-float (name) ((:rest "Group Name: "))
-"Create a floating window group with the specified name, but do not switch to it."
+(defcommand gnewbg-float (name) ((:rest "Enter Group Name: "))
+  "Create a floating window group with the specified name, but do not switch to it."
   (add-group (current-screen) name :background t :type 'float-group))
 
-;; Experimental
 (defcommand grun-new-float (command) ((:shell "Enter command: "))
   "Run shell command in new float group with same name with command"
-  (check-type command string)
   (gnew-float command)
   (run-shell-command command))
 
-(defcommand gmove-new-float (groupname) ((:string "Enter groupname: "))
-  "Run shell command in new float group with same name with command"
-  (check-type groupname string)
-  (gnewbg-float groupname)
-  (gmove  groupname))
+(defcommand gnew-float-with-window (name) ((:string "Enter Group Name: "))
+  "Move current window to new float group"
+  (gnewbg-float name)
+  (gselect-with-window  name))

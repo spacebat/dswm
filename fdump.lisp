@@ -85,7 +85,8 @@
 	(copy-file
 	 file
 	 (merge-pathnames
-	  (make-pathname :type (concat (pathname-type file) "~")) file)))
+	  (make-pathname :type (concat (pathname-type file) "~")) file)
+	 :overwrite t))
     (with-open-file (fp file :direction :output :if-exists :supersede)
 		    (with-standard-io-syntax
 		     (let ((*package* (find-package :dswm))

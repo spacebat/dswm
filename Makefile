@@ -5,10 +5,10 @@ sbcl_BUILDOPTS=--load ./make-image.lisp
 ccl_BUILDOPTS=--load ./make-image.lisp
 ecl_BUILDOPTS=-norc -shell ./make-image.lisp
 
-clisp_INFOOPTS=-K full -on-error exit -x "(require 'asdf '(\"asdf.lisp\")) (load \"dswm.asd\") (load \"/home/cosmonaut/dev/dss/dswm_new/cl-ppcre/cl-ppcre.asd\") (asdf:operate 'asdf:load-op :dswm) (load (compile-file \"manual.lisp\")) (dswm::generate-manual) (ext:exit)"
+clisp_INFOOPTS=-K full -on-error exit -x "(require 'asdf '(\"asdf.lisp\")) (load \"dswm.asd\") (load \"/home/cosmonaut/dev/dss/dswm/cl-ppcre/cl-ppcre.asd\") (asdf:operate 'asdf:load-op :dswm) (load (compile-file \"manual.lisp\")) (dswm::generate-manual) (ext:exit)"
 sbcl_INFOOPTS=--eval "(progn (require 'asdf) (require 'dswm) (load \"manual.lisp\"))" --eval "(progn (dswm::generate-manual) (sb-ext:quit))"
 ccl_INFOOPTS=--eval "(progn (require 'asdf) (require 'dswm))" --load manual.lisp --eval "(progn (dswm::generate-manual) (quit))"
-ecl_INFOOPTS=-eval "(progn (require 'asdf) (load \"/home/cosmonaut/dev/dss/dswm_new/cl-ppcre/cl-ppcre.asd\") (require 'dswm) (load \"manual.lisp\"))" -eval "(progn (dswm::generate-manual) (ext:quit))"
+ecl_INFOOPTS=-eval "(progn (require 'asdf) (load \"/home/cosmonaut/dev/dss/dswm/cl-ppcre/cl-ppcre.asd\") (require 'dswm) (load \"manual.lisp\"))" -eval "(progn (dswm::generate-manual) (ext:quit))"
 datarootdir = ${prefix}/share
 prefix=/usr/local
 exec_prefix= ${prefix}
