@@ -315,7 +315,7 @@ inn - for international
   `(find-hyperbookmark :url ,url))
 
 (defun dump-hyperbookmarks (&optional (hbdump *hyperbookmarks-list*))
-  (dswm::dump-to-file hbdump *hyperbookmarks-file*))
+  (dswm::dump-structure hbdump t *hyperbookmarks-file*))
 
 
 

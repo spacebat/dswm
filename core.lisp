@@ -142,22 +142,6 @@
     (setf dir (concat dir "/")))
   (pathname dir))
 
-;; Macros for different modes
-(defmacro add-dswm-behavior (shortname-if shortname-if-not name)
-  "Macro for add behavior-specific macros"
-  `(progn
-     (defun ,shortname-if (body)
-       (let ((a ,name))
-	 (if (member a *mode* :test 'equal)
-	      body t)))
-     (defun ,shortname-if-not (body)
-       (let ((a ,name))
-	 (if (not (member a *mode* :test 'equal))
-	      body t)))))
-
-(add-dswm-behavior +st -st "sesstion-transparent") ;; add sesstion transparent behavior
-(add-dswm-behavior +i -i "interactive") ;; add interactive behavior
-
 (defmacro eval-with-message (&key body
 				  body-alternative
 				  message-if-done

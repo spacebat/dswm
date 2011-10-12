@@ -306,9 +306,6 @@ Groups are known as \"virtual desktops\" in the NETWM standard."
 		    (setf (screen-groups screen) (append (screen-groups screen) (list ng)))
 		    (netwm-set-group-properties screen)
 		    (netwm-update-groups screen)
-		    (+st
-		     (dump-to-file *window-placement-rules*
-						  (data-dir-file "window-placement" "rules") t)) ; for session-transparent mode
 		    ng))))
       (unless background
 	(switch-to-group ng))
@@ -347,21 +344,23 @@ current group. If @var{name} begins with a dot (``.'') the group new
 group will be created in the hidden state. Hidden groups have group
 numbers less than one and are invisible to from gprev, gnext, and, optionally,
 groups and vgroups commands."
-  (if (not (add-group (current-screen) name))
-      (+i (run-commands "gnew"))
-    (+st (dump-desktop))))
-
-(defcommand gnew-with-window (name) ((:string "Input group name: "))
-  "Run shell command in new group with same name with command"
-  (gnew name)
-  (let ((group (current-group)))
-    (gother)
-    (gselect-with-window group)))
+  (add-group (current-screen) name))
 
 (defcommand gnewbg (name) ((:string "Input group name: "))
   "Create a new group but do not switch to it."
-  (if (not (add-group (current-screen) name :background t))
-      (+i (run-commands "gnewbg"))))
+  (add-group (current-screen) name :background t))
+
+(defcommand gnew-with-window (name) ((:string "Input group name: "))
+  "Move current window to new group"
+  (let ((group (gnewbg name)))
+    (gmove group)
+    (gselect group)))
+
+(defcommand gnew-with-marked (name) ((:string "Input group name: "))
+  "Move marked window to new group"
+  (let ((group (gnewbg name)))
+    (gmove-marked group)
+    (gselect group)))
 
 (defcommand gnext () ()
   "Cycle to the next group in the group list."
@@ -405,18 +404,13 @@ window along."
   "Rename the current group."
   (let ((group (current-group)))
     (cond ((find-group (current-screen) name)
-           (message (concat "^Name already exists."
-			  (+i (format nil "Rename to another name"))))
-	   (+i (run-commands "grename")))
+           (message "^Name already exists."))
           ((or (zerop (length name))
                (string= name ".")
 	       ;; FIXME groups must have possibility to include
 	       ;; numbers here
 	       (cl-ppcre:scan-to-strings "[0-9]" name))
-	   (progn
-	     (error (concat "Empty name or name with numbers"
-			    (+i (format nil "Rename to another name"))))
-	     (+i (run-commands "grename"))))
+	   (message "Empty name or name with numbers"))
           (t
            (cond ((and (char= (char name 0) #\.) ;change to hidden group
                        (not (char= (char (group-name group) 0) #\.)))
@@ -479,10 +473,10 @@ the default group formatting and window formatting, respectively."
              (current-window))
     (move-window-to-group (current-window) group)))
 
-(defcommand gselect-with-window (group) ((:group "Select group: "))
-  "Move the current window to the specified group and switch to it."
-  (gmove group)
-  (gselect group))
+;; (defcommand gselect-with-window (group) ((:group "Select group: "))
+;;   "Move the current window to the specified group and switch to it."
+;;   (gmove group)
+;;   (gselect group))
 
 (defcommand gmove-marked (group) ((:group "Select group: "))
   "move the marked windows to the specified group."
@@ -510,7 +504,6 @@ The windows will be moved to group \"^B^2*~a^n\"
             (progn
               (switch-to-group to-group)
               (kill-group dead-group to-group)
-	      (+st (dump-desktop))
               (message (format nil "Group ~a deleted" (group-name dead-group))))
 	  (message "Canceled"))
         (message "There's only one group left"))))
@@ -518,11 +511,8 @@ The windows will be moved to group \"^B^2*~a^n\"
 (defcommand gmerge (from) ((:group "From group: "))
 "Merge @var{from} into the current group. @var{from} is not deleted."
   (if (eq from (current-group))
-      (progn
-	(message (concat "^B^3*Cannot merge group with itself!"
-			 (+i (format nil "Try merge with another group"))))
-	(+i (run-commands "gmerge")))
-      (merge-groups from (current-group))))
+      (message "^B^3*Cannot merge group with itself!")
+    (merge-groups from (current-group))))
 
 (defcommand grun (command group) ((:shell "Enter command to run program: ")
 				  (:group "In what group? "))

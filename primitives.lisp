@@ -1254,6 +1254,13 @@ The directory used by dswm to store data between sessions.")
   (ensure-directories-exist (data-dir))
   (make-pathname :name name :type type :defaults (data-dir)))
 
+;; Names of dump files
+(defvar *desktop-dump-file* (data-dir-file "desktop" "rules")
+  "Default filename for dump group placement rules")
+
+(defvar *window-placement-dump-file* (data-dir-file "window-placement" "rules")
+    "Default filename for dump window placement rules")
+
 (defmacro with-data-file ((s file &rest keys &key (if-exists :supersede) &allow-other-keys) &body body)
   "Open a file in DSWM's data directory. keyword arguments are sent
 directly to OPEN. Note that IF-EXISTS defaults to :supersede, instead

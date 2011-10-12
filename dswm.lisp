@@ -221,7 +221,6 @@ of those expired."
     ;; Switch on mode-line
     (if (not (head-mode-line (current-head)))
 	(toggle-mode-line (current-screen) (current-head)))
-    (+st (restore-all))
     ;; FIXME: fix tip-of-the-day and (first-start)
     (first-start)
     ;; (if (and *show-tip-of-the-day-p*

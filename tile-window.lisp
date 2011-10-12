@@ -442,11 +442,10 @@ frame. Possible values are:
     (remove-rules-for-group i)))
 
 (defmacro forget-remember-rules (body message message-false)
-  "Local macro. Forget or remember windows placement rules with +/-st functionality"
-  `(eval-with-message :body (progn ,body
-				   (+st
-				    (dump-to-file *window-placement-rules*
-						  (data-dir-file "window-placement" "rules") t)))
+  "Local macro. Forget or remember windows placement rules"
+  `(eval-with-message :body (progn ,body (dump-structure
+					  *window-placement-rules* t
+					  (data-dir-file "window-placement" "rules")))
 		      :message-if-done ,message
 		      :message-if-false ,message-false))
 
@@ -486,18 +485,12 @@ directory and files") )
   ((:y-or-n "Lock to group? ")
    (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
-  (and
-   (not (setf *window-placement-rules* nil))
-   (make-rules-for-desktop (first lock) (first title))
-   "Rules remembered"
-   "Can't remember rules. Check write permissions to dswm data
-directory and files"))
-
-(defcommand revert-windows () ()
-  "Restore window placement rules, which were befor last change"
-  (setf *window-placement-rules*
-	(read-dump-from-file
-	 (data-dir-file "window-placement" "rules~"))))
+  (forget-remember-rules
+   (and
+    (not (setf *window-placement-rules* nil))
+    (make-rules-for-desktop (first lock) (first title)))
+    "Rules remembered"
+    "Can't remember rules. Check write permissions to dswm data directory and files"))
 
 (defcommand (forget-window tile-group) () ()
   "Make a generic placement rule for the current window. Might be too
@@ -505,8 +498,7 @@ specific/not specific enough!"
   (forget-remember-rules
    (remove-rule-for-window (current-window))
    "Rules forgotten"
-   "Can't forgot rules. Check write permissions to dswm data
-directory and files"))
+   "Can't forgot rules. Check write permissions to dswm data directory and files"))
 
 (defcommand-alias forget forget-window)
 
@@ -528,30 +520,8 @@ directory and files"))
   "Remove placement rules for all windows"
   (forget-remember-rules
    (setf *window-placement-rules* nil)
-   "Rules forgot"
+   "Rules forgotten"
    "Can't forgot rules. Check write permissions to dswm data directory and files") )
-
-(-st
- (defcommand (dump-window-placement-rules tile-group) (file)
-   ((:file "Input filename to dump: "))
-   "Dump *window-placement-rules* to FILE."
-   (dump-to-file *window-placement-rules* file))
- )
-
-(-st
- (defcommand-alias dump-rules dump-window-placement-rules)
- )
-
-(-st
- (defcommand restore-window-placement-rules (file)
-   ((:file "Enter filename to restore: "))
-   "Restore *window-placement-rules* from FILE."
-   (setf *window-placement-rules* (read-dump-from-file file)))
- )
-
-(-st
- (defcommand-alias restore-rules restore-window-placement-rules)
- )
 
 (defcommand (redisplay tile-group) () ()
   "Refresh current window by a pair of resizes, also make it occupy entire frame."
