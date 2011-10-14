@@ -79,11 +79,9 @@
 (defmethod update-decoration ((window float-window))
   (let ((group (window-group window)))
     (setf (xlib:window-background (window-parent window))
-          (xlib:alloc-color (xlib:screen-default-colormap (screen-number (window-screen window)))
-                            (if (eq (group-current-window group) window)
-				;; FIXME: realize not through constants
-				+default-focus-color+
-			      +default-unfocus-color+)))
+	  (if (eq (group-current-window group) window)
+	      (screen-focus-color (window-screen window))
+	    (screen-unfocus-color (window-screen window))))
     (xlib:clear-area (window-parent window))))
 
 (defmethod window-sync ((window float-window) hint)
@@ -274,7 +272,7 @@
              (setf (window-x window) (xlib:drawable-x (window-parent window))
                    (window-y window) (xlib:drawable-y (window-parent window)))))))
       (t
-       (when (eq *mouse-focus-policy* :click)
+       (unless (eq *mouse-focus-policy* :sloppy)
          (focus-window window))))))
 
 (defmethod group-button-press ((group float-group) x y where)

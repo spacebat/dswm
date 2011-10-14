@@ -284,9 +284,10 @@
     (when (file-exists-p (data-dir-file "desktop" "rules"))
       (restore-from-file
        (data-dir-file "desktop" "rules")))
-    (setf *window-placement-rules*
-	  (read-dump-from-file
-	   (data-dir-file "window-placement" "rules")))
+    (when (file-exists-p (data-dir-file "window-placement" "rules"))
+      (setf *window-placement-rules*
+	    (read-dump-from-file
+	     (data-dir-file "window-placement" "rules"))))
     ;; Add function for restore all programs, running in last session
     ))
 
@@ -317,8 +318,8 @@
 named file."
   (eval-with-message :body
 		     (dump-group (current-group) :to-fs t :file file)
-		     :message-if-done "Group dumped"
-		     :message-if-false "Cannot dump group"))
+		     :message-if-done "Group saved"
+		     :message-if-false "Cannot save group"))
 
 (defcommand remember-group () ()
   "Dumps the frames of the current group of the current screen to the
@@ -330,8 +331,8 @@ default dump file."
 file"
   (eval-with-message :body
 		     (dump-screen (current-screen) :to-fs t :file file)
-		     :message-if-done "Screen dumped"
-		     :message-if-false "Can't dump screen"))
+		     :message-if-done "Screen saved"
+		     :message-if-false "Can't save screen"))
 
 (defcommand remember-screen () ()
   "Dumps the frames of all groups of the current screen to the default
@@ -342,8 +343,8 @@ dump file"
   "Dumps the frames of all groups of all screens to the named file"
   (eval-with-message :body
 		     (dump-desktop :to-fs t :file file)
-		     :message-if-done "Desktop dumped"
-		     :message-if-false "Can't dump desktop"))
+		     :message-if-done "Desktop saved"
+		     :message-if-false "Can't save desktop"))
 
 (defcommand remember-desktop () ()
   "Dumps the frames of all groups of all screens to the default dump file"
@@ -358,7 +359,7 @@ rules to frame-froup-placement.rules and window-placement.rules in
 data dir"
   (eval-with-message :body
 		     (progn
-		       (remember-all-windows '("y") '("n"))
+		       (remember-all-windows t nil)
 		       (dump-desktop :to-fs t))
 		     :message-if-done "Snapshot created"
 		     :message-if-false "Can't create snapshot"))
