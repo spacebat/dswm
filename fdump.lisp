@@ -359,7 +359,7 @@ rules to frame-froup-placement.rules and window-placement.rules in
 data dir"
   (eval-with-message :body
 		     (progn
-		       (remember-all-windows t nil)
+		       (remember-all-windows '(t) '(nil))
 		       (dump-desktop :to-fs t))
 		     :message-if-done "Snapshot created"
 		     :message-if-false "Can't create snapshot"))

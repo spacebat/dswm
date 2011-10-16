@@ -398,16 +398,17 @@ frame. Possible values are:
 
 (defun make-rule-for-window (window &optional lock title)
   "Guess at a placement rule for WINDOW and add it to the current set."
-  (let* ((group (window-group window))
-         (group-name (group-name group))
-         (frame-number (frame-number (window-frame window)))
-         (role (window-role window)))
-    (push (list group-name frame-number t lock
-                :class (window-class window)
-                :instance (window-res window)
-                :title (and title (window-name window))
-                :role (and (not (equal role "")) role))
-          *window-placement-rules*)))
+  (if (typep window 'tile-window) ;; TODO: Make rules for float windows
+      (let* ((group (window-group window))
+	     (group-name (group-name group))
+	     (frame-number (frame-number (window-frame window)))
+	     (role (window-role window)))
+	(push (list group-name frame-number t lock
+		    :class (window-class window)
+		    :instance (window-res window)
+		    :title (and title (window-name window))
+		    :role (and (not (equal role "")) role))
+	      *window-placement-rules*))))
 
 (defun make-rules-for-group (group &optional lock title)
   "Guess at a placement rule for all WINDOWS in group and add it to the current set."
@@ -461,7 +462,7 @@ directory and files"))
 
 (defcommand-alias remember remember-window)
 
-(defcommand (remember-windows-this-group tile-group) (lock title)
+(defcommand (remember-windows-current-group tile-group) (lock title)
   ((:y-or-n "Lock to group? ")
    (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
@@ -471,7 +472,7 @@ directory and files"))
    "Can't remember rules. Check write permissions to dswm data
 directory and files"))
 
-(defcommand remember-windows-this-screen (lock title)
+(defcommand remember-windows-current-screen (lock title)
   ((:y-or-n "Lock to group? ")
    (:y-or-n "Use title? "))
   "Make a generic placement rule for the current window. Might be too specific/not specific enough!"
@@ -502,14 +503,14 @@ specific/not specific enough!"
 
 (defcommand-alias forget forget-window)
 
-(defcommand (forget-windows-this-group tile-group) () ()
+(defcommand (forget-windows-current-group tile-group) () ()
   "Remove a generic placement rule for the current window. Might be too specific/not specific enough!"
   (forget-remember-rules
    (remove-rules-for-group (current-group))
    "Rules forgotten"
    "Can't forgot rules. Check write permissions to dswm data directory and files"))
 
-(defcommand forget-windows-this-screen () ()
+(defcommand forget-windows-current-screen () ()
   "Remove generic placement rules for the all windows in current screen"
   (forget-remember-rules
    (make-rules-for-screen (current-screen))

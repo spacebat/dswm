@@ -1,6 +1,51 @@
 -*- outline -*-
 
 This file documents user visible changes between versions of DSWM
+* Changes since 0.0.3
+** synchronize code with newer stumpwm code
+
+** add hook frame-split-hook
+
+** fix bug in 'run-in-terminal' command
+
+** add functions: grun
+
+** add commands: edit-variable add-modules-dir help-short
+
+** modify dump-restore subsystem. New commands:
+   remember-window remember-windows-current-{group,screen} remember-all-windows
+   forget-window forget-windows-current-{group,screen} forget-all-windows
+   remember-{group,screen,desktop} snapshot-desktop restore-desktop-snapshot
+   forget-{group,screen,desktop}
+
+** replace commands: 
+   run-gnew->grun-new
+   gmove-new{-float}->gnew{-float}-with-window
+
+** change hsplit/vsplit (taking a ratio now)
+
+** fix bug Bug wigh giving focus to unfocusable windows
+
+** change command rename-frame to rename-window (as alias to 'title')
+
+** Feature Changes in 'web' module---
+
+** fix bug with incorrect prev/next behavior
+
+** implement full transparent (through gnext, gother etc) SCRATCHPAD behavior
+
+** added short help message as well as standard
+
+** moved to newer stumpwm code base
+
+** integrate some code for advanced operations with file systems (partly from cl-fad etc)
+
+** change messages
+
+** add standard color scheme for floating window decorations
+
+** change split frame with optional parameter "ratio" (used only, when calling as function)
+
 * Changes since 0.0.1
 ** add contrib modules web.lisp, s-bindings.lisp
 

@@ -934,7 +934,7 @@ window. Default to the current window. if
       (message "No Focused Window")))
 
 ; Emacs-like
-(defcommand-alias title rename-window)
+(defcommand-alias rename-window title)
 
 (defcommand select-window (query) ((:window-name "Select window: "))
   "Switch to the first window that starts with @var{query}."

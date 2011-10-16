@@ -19,7 +19,7 @@
 
 ;; Commentary:
 ;;
-;; Use `set-contrib-dir' to set the location dswm searches for modules.
+;; Use `add-modules-dir' to add the location dswm searches for modules.
 
 ;; Directories with external modules:
 ;;
@@ -34,7 +34,7 @@
 (export '(load-module
           modules-list
 	  *user-modules-dir*
-	  set-contrib-dir
+	  add-modules-dir
           find-module))
 
 (defvar *list-modules-dir* (list (string-as-directory "@prefix@/share/dswm/modules"))
