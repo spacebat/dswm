@@ -85,7 +85,7 @@ install: dswm.info dswm
 	install -m 644 modules/*.lisp "$(destdir)$(datarootdir)/dswm/modules"
 	install -m 644 COPYING "$(destdir)$(datarootdir)/dswm/"
 	install -m 644 AUTHORS "$(destdir)$(datarootdir)/dswm/"
-	test -d "$(destdir)$(datarootdir)/xsessions" && install -m 644 dswm.desktop "$(destdir)$(datarootdir)/xsessions" || install -m 644 dswm.desktop "/usr/share/xsessions/"
+	test -d "$(destdir)$(datarootdir)/xsessions" && install -m 644 dswm.desktop "$(destdir)$(datarootdir)/xsessions" || install -m 644 dswm.desktop "$(destdir)/usr/share/xsessions/"
 
 uninstall:
 	rm "$(destdir)$(bindir)/dswm"
