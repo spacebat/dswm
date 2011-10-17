@@ -66,14 +66,12 @@ If there's already a configure script then just run it.
 
 $ ./configure
 
-By default dswm elects sbcl. If you have both installed, you can
-explicitly select clisp like so:
+DSWM buils oficially supports only sbcl, so, you not need to input some options,
+related to CL realization.
 
-$ ./configure --with-lisp=clisp
+If your SBCL located in strange place you may need to tell the script where to find it:
 
-If your lisps are in strange places you may need to tell the script where to find them:
-
-$ configure --with-sbcl=/home/sabetts/opt/bin/sbcl --with-clisp=/usr/local/downstairs/to/the/left/clisp
+$ configure --with-sbcl=/home/cosmonaut/opt/bin/sbcl
 
 Now build it:
 
@@ -93,6 +91,9 @@ $ startx
 
 Hopefully that will put you in X running dswm!
 
+Also, you can load dswm with your favorite display manager. Just select it
+from load menu ;)
+
 SBCL And Threads
 ----------------
 
@@ -101,26 +102,18 @@ common is sluggishness. It may also cause dswm to become
 unresponsive. If you use SBCL, consider using a version built without
 threads.
 
-build.sh
---------
-Also available script dswm-install.sh for building and installing dswm
-
-CCL And Virtual Memory
-----------------------
-
-On 64bit platforms, CCL reserves a "very large" amount of virtual
-memory. If this bothers you for some reason, you can pass the -R or
---heap-reserve option to the binary in your ~/.xinitrc file. See
-http://ccl.clozure.com/manual/chapter15.1.html for an explanation.
-
 Help
 ----
 
 There's a texinfo manual, dswm.texi. the build scripts generate an
 info file you can read in emacs or with the `info' program.
 
-For other stuff visit the stumpwm wiki:
+For other stuff visit the dswm site of stumpwm wiki (dswm wiki is not completely prepared yet):
 
-http://stump.antidesktop.net/ (dswm wiki is not prepared yet)
+DSWM: http://dss-project.org/doku.php/en:index
 
-There's a 'dswm' room at jabber conference conference.work-space.org.ua
+StumpWM: http://stump.antidesktop.net/
+
+Also we have mailing list: https://lists.sourceforge.net/lists/listinfo/dswm-user
+              IRC channel: #dswm at freenode.net (webIRC: http://dss-project.org/doku.php/en:dswm:irc)
+           Freshmeat page: http://freshmeat.net/projects/dswm
