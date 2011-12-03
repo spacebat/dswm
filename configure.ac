@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(Deep Space Window Manager (part of Deep Space Style project), 0.0.4, cosmonaut.ok@gmail.com)
+AC_INIT(Deep Space Window Manager (part of Deep Space Style project), esyscmd(grep :version dswm.asd | cut -d\" -f2 | tr -d \\n), esyscmd(grep :author dswm.asd | cut -d\< -f2 | cut -d\> -f1))
 
 AC_SUBST(MODULES_DIR)
 AC_SUBST(LISP_PROGRAM)
