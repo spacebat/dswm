@@ -1076,12 +1076,6 @@ be used to override the default window formatting."
 
 (defcommand-alias windows echo-windows)
 
-(defcommand info (&optional (fmt *window-info-format*)) (:rest)
-  "Display information about the current window."
-  (if (current-window)
-      (message "~a" (format-expand *window-formatters* fmt (current-window)))
-      (message "No Current Window")))
-
 (defcommand refresh () ()
   "Refresh current window without changing its size."
   (let* ((window (current-window))
