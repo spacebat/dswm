@@ -294,7 +294,8 @@ Groups are known as \"virtual desktops\" in the NETWM standard."
   (if (or (string= name "")
           (string= name ".")
 	  ;; FIXME. Groups must have numbers in its names
-	  (cl-ppcre:scan-to-strings "[0-9]" name))
+	  ;; (cl-ppcre:scan-to-strings "[0-9]" name)
+	  )
       (message "^B^1*Error:^n Groups must have a name and not contain numbers.")
     (let ((ng (or (find-group screen name)
 		  (let ((ng (make-instance type
@@ -332,8 +333,8 @@ exists. Returns the new group."
 (defun group-forward-with-window (current list)
   "Switch to the next group in the list, if one exists, and moves the
 current window of the current group to the new one."
-  (let ((next (group-forward current list))
-        (win (group-current-window current)))
+  (let ((win (group-current-window current))
+	(next (group-forward current list)))
     (when (and next win)
       (move-window-to-group win next)
       (really-raise-window win))))
