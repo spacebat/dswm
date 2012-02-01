@@ -77,54 +77,90 @@ from most specific groups to most general groups.")
              m))))
 
 (defmacro defkeymap (name &key prefix-key parent-map keybindings)
-  (progn (eval `(progn
-		  (defvar ,name nil)
-		  (fill-keymap ,name ,@keybindings)))
-	 `(progn
-	    (define-key ,name ,prefix-key "send-escape")
-	    (if (null ,parent-map)
-	 	(define-key *top-map* ,prefix-key ',name)
-	      (define-key ,parent-map ,prefix-key ',name)))))
+  (eval `(defvar ,name (make-sparse-keymap)))
+  (if (null parent-map)
+      `(fill-keymap *top-map* ,@keybindings)
+    `(progn
+       (fill-keymap ,name ,@keybindings)
+       (define-key ,name ,prefix-key "send-escape")
+;;       (define-key ,parent-map ,prefix-key ,name)
+)))
+
+
+
+
+(defmacro fill2-keymap (map &key parent-map prefix-key keybindings)
+  (eval `(defvar ,map (make-sparse-keymap)))
+  `(if (null ,parent-map)
+       (fill-keymap *top-map* ,@keybindings)
+     (progn
+       (define-key ,map ,prefix-key "send-escape")
+       (unless ,map
+	 (setf ,map
+	       (let ((m (make-sparse-keymap)))
+		 ,@(loop for i = keybindings then (cddr i)
+			 while i
+			 collect `(define-key m ,(first i) ,(second i)))
+		 m))))))
+
+;; (defmacro defkeymap (name &key prefix-key parent-map keybindings)
+  
+  
+;;     `(progn
+;;        (fill-keymap ,name ,@keybindings)
+
+;; ;;       (define-key ,parent-map ,prefix-key ,name)
+;; )))
+
+
+
+
+
+(defvar *root-map* (make-sparse-keymap))
+(define-key *top-map* *escape-key* *root-map*)
 
 (fill-keymap *top-map*
   (kbd "M-`") "scratchpad"
   *escape-key* '*root-map*)
 
-(fill-keymap *root-map*
-  (kbd "c")   "terminal"
-  (kbd "C-c") "terminal"
-  (kbd "e")   "emacs"
-  (kbd "C-e") "emacs"
-  (kbd "b")   "browser"
-  (kbd "C-b") "browser"
-  (kbd "C-B") "banish"
-  (kbd "B") "banish"
-  (kbd "a")   "time"
-  (kbd "C-a") "time"
-  (kbd "!")   "exec"
-  (kbd "t")   "run-in-terminal"
-  (kbd "C-g") "abort"
-  *escape-fake-key* "send-escape"
-  (kbd ";")   "colon"
-  (kbd ":")   "eval"
-  (kbd "v")   "version"
-  (kbd "m")   "move-window-to-frame"
-  (kbd "C-m") "lastmsg"
-  (kbd "G")   "vgroups"
-  (kbd "F1")  "gselect 1"
-  (kbd "F2")  "gselect 2"
-  (kbd "F3")  "gselect 3"
-  (kbd "F4")  "gselect 4"
-  (kbd "F5")  "gselect 5"
-  (kbd "F6")  "gselect 6"
-  (kbd "F7")  "gselect 7"
-  (kbd "F8")  "gselect 8"
-  (kbd "F9")  "gselect 9"
-  (kbd "F10") "gselect 10"
-  (kbd "C-h") "help-short")
+(fill2-keymap *root-map*
+  :parent-map *top-map*
+  :prefix-key (kbd "C-j")
+  :keybindings
+  ((kbd "c")   "terminal"
+   (kbd "C-c") "terminal"
+   (kbd "e")   "emacs"
+   (kbd "C-e") "emacs"
+   (kbd "b")   "browser"
+   (kbd "C-b") "browser"
+   (kbd "C-B") "banish"
+   (kbd "B") "banish"
+   (kbd "a")   "time"
+   (kbd "C-a") "time"
+   (kbd "!")   "exec"
+   (kbd "t")   "run-in-terminal"
+   (kbd "C-g") "abort"
+   *escape-key* "send-escape"
+   (kbd ";")   "colon"
+   (kbd ":")   "eval"
+   (kbd "v")   "version"
+   (kbd "m")   "move-window-to-frame"
+   (kbd "C-m") "lastmsg"
+   (kbd "G")   "vgroups"
+   (kbd "F1")  "gselect 1"
+   (kbd "F2")  "gselect 2"
+   (kbd "F3")  "gselect 3"
+   (kbd "F4")  "gselect 4"
+   (kbd "F5")  "gselect 5"
+   (kbd "F6")  "gselect 6"
+   (kbd "F7")  "gselect 7"
+   (kbd "F8")  "gselect 8"
+   (kbd "F9")  "gselect 9"
+   (kbd "F10") "gselect 10"
+   (kbd "C-h") "help-short"))
 
 (fill-keymap *group-top-map*
-  *escape-key* '*group-root-map*)
+  *escape-key* *group-root-map*)
 
 (fill-keymap *group-root-map*
   (kbd "C-u") "next-urgent"
@@ -204,50 +240,50 @@ from most specific groups to most general groups.")
 (fill-keymap *float-group-top-map*)
 (fill-keymap *float-group-root-map*)
 
-(defkeymap *groups-map*
-  :prefix-key (kbd "g")
-  :parent-map *root-map*
-  :keybindings
-  ((kbd "g")     "groups"
-   (kbd "c")     "gnew"
-   (kbd "n")     "gnext"
-   (kbd "C-n")   "gnext"
-   (kbd "SPC")   "gnext"
-   (kbd "C-SPC") "gnext"
-   (kbd "N")     "gnext-with-window"
-   (kbd "p")     "gprev"
-   (kbd "C-p")   "gprev"
-   (kbd "P")     "gprev-with-window"
-   (kbd "o")     "gother"
-   (kbd "'")     "gselect"
-   (kbd "\"")    "grouplist"
-   (kbd "m")     "gmove"
-   (kbd "M")     "gmove-marked"
-   (kbd "k")     "gkill"
-   (kbd "A")     "grename"
-   (kbd "r")     "grename"
-   (kbd "!")     "run-gnew"
-   (kbd "@")     "run-gnew-float"
-   (kbd "1")     "gselect 1"
-   (kbd "2")     "gselect 2"
-   (kbd "3")     "gselect 3"
-   (kbd "4")     "gselect 4"
-   (kbd "5")     "gselect 5"
-   (kbd "6")     "gselect 6"
-   (kbd "7")     "gselect 7"
-   (kbd "8")     "gselect 8"
-   (kbd "9")     "gselect 9"
-   (kbd "0")     "gselect 10"))
+;; (defkeymap *groups-map*
+;;   :prefix-key (kbd "g")
+;;   :parent-map *root-map*
+;;   :keybindings
+;;   ((kbd "g")     "groups"
+;;    (kbd "c")     "gnew"
+;;    (kbd "n")     "gnext"
+;;    (kbd "C-n")   "gnext"
+;;    (kbd "SPC")   "gnext"
+;;    (kbd "C-SPC") "gnext"
+;;    (kbd "N")     "gnext-with-window"
+;;    (kbd "p")     "gprev"
+;;    (kbd "C-p")   "gprev"
+;;    (kbd "P")     "gprev-with-window"
+;;    (kbd "o")     "gother"
+;;    (kbd "'")     "gselect"
+;;    (kbd "\"")    "grouplist"
+;;    (kbd "m")     "gmove"
+;;    (kbd "M")     "gmove-marked"
+;;    (kbd "k")     "gkill"
+;;    (kbd "A")     "grename"
+;;    (kbd "r")     "grename"
+;;    (kbd "!")     "run-gnew"
+;;    (kbd "@")     "run-gnew-float"
+;;    (kbd "1")     "gselect 1"
+;;    (kbd "2")     "gselect 2"
+;;    (kbd "3")     "gselect 3"
+;;    (kbd "4")     "gselect 4"
+;;    (kbd "5")     "gselect 5"
+;;    (kbd "6")     "gselect 6"
+;;    (kbd "7")     "gselect 7"
+;;    (kbd "8")     "gselect 8"
+;;    (kbd "9")     "gselect 9"
+;;    (kbd "0")     "gselect 10"))
 
-(defkeymap *help-map*
-  :prefix-key (kbd "h")
-  :parent-map *root-map*
-  :keybindings
-  ((kbd "v") "describe-variable"
-   (kbd "f") "describe-function"
-   (kbd "k") "describe-key"
-   (kbd "c") "describe-command"
-   (kbd "w") "where-is"))
+;; (defkeymap *help-map*
+;;   :prefix-key (kbd "h")
+;;   :parent-map *root-map*
+;;   :keybindings
+;;   ((kbd "v") "describe-variable"
+;;    (kbd "f") "describe-function"
+;;    (kbd "k") "describe-key"
+;;    (kbd "c") "describe-command"
+;;    (kbd "w") "where-is"))
 
 (defcommand command-mode () ()
 "Command mode allows you to type ratpoison commands without needing the

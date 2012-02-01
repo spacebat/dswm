@@ -1293,6 +1293,21 @@ of :error."
      (:invert (string-downcase thing)))
    package))
 
+(defun construct-variable (name initial-value)
+  "Create a global variable whose name is NAME in the current package and which is bound to INITIAL-VALUE."
+  (let ((symbol (intern name)))
+    (proclaim `(special ,symbol))
+    (setf (symbol-value symbol) initial-value)
+    symbol))
+
+(defun concat-sequence (list)
+  "Concatenates sequense from list of strings, numbers etc"
+	(labels ((concat (list)
+		   (if (not (null list))
+		       (concatenate 'string (prin1-to-string (car list))
+				    (concat (cdr list))))))
+	  (intern (concat list))))
+
 (defun command-mode-start-message ()
   (message "Press C-g to exit command-mode."))
 
