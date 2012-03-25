@@ -41,9 +41,9 @@ loaded. When CATCH-ERRORS is nil, errors are left to be handled further up. "
 	 (user-initrc (file-exists-p (merge-pathnames (user-homedir-pathname)
 						   #p".dswm")))
          (etc-rc (file-exists-p #p"/etc/dss/dswm/dswm.lisp"))
-         (rc (or user-initrc user-rc))
-	 (startup-cmd (file-exists-p (data-dir-file "startup" "lisp"))))
+         (rc (or user-initrc user-rc)))
     (progn
+      (startup-only)
       (if etc-rc
 	  (if catch-errors
 	      (handler-case (load etc-rc)
@@ -63,11 +63,16 @@ loaded. When CATCH-ERRORS is nil, errors are left to be handled further up. "
 	      (load rc)
 	      (values t nil rc)))
 	(values t nil nil))
-      (if (and
-	   (not reload)
-	   startup-cmd)
-	  (load startup-cmd)
-	(values t nil startup-cmd)))))
+      (when (not reload)
+	(run-code-just-when-start)))))
+
+(defmacro startup-only (&rest body)
+  "function, which runs code, just when DSWM starting.
+Not when command loadrc runs, reinit runs after crash etc.
+Useful for run programs on startup etc."
+  `(defun run-code-just-when-start ()
+     (progn
+       ,@body)))
 
 (defun error-handler (display error-key &rest key-vals &key asynchronous &allow-other-keys)
   "Handle X errors"
