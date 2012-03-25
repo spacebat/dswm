@@ -1,5 +1,5 @@
 ;; Copyright (C) 2003-2008 Shawn Betts
-;; Copyright (C) 2010-2011 Alexander aka CosmonauT Vynnyk
+;; Copyright (C) 2010-2012 Alexander aka CosmonauT Vynnyk
 ;;
 ;;  This file is part of dswm.
 ;;
@@ -436,6 +436,21 @@ window along."
                         (if *list-hidden-groups* groups (non-hidden-groups groups)))))
     (echo-string-list screen names)))
 
+(defun grouplist-for-echo (screen fmt &optional verbose (wfmt *window-format*))
+  "Print a list of the windows to the screen."
+  (let* ((groups (sort-groups screen))
+         (names (mapcan (lambda (g)
+                          (list*
+                           (format-expand *group-formatters* fmt g)
+                           (when verbose
+                             (mapcar (lambda (w)
+                                       (format-expand *window-formatters*
+                                                      (concatenate 'string "  " wfmt)
+                                                      w))
+                                     (sort-windows-by-number g)))))
+                        (if *list-hidden-groups* groups (non-hidden-groups groups)))))
+    screen names))
+
 (defcommand vgroups (&optional gfmt wfmt) (:string :rest)
 "Like @command{groups} but also display the windows in each group. The
 optional arguments @var{gfmt} and @var{wfmt} can be used to override
@@ -458,12 +473,33 @@ the default group formatting and window formatting, respectively."
 	 (group (second (select-from-menu
 			 (current-screen)
 			 (mapcar (lambda (g)
-				   (list (format-expand *group-formatters* fmt g) g))
+				   (when
+				       (not (equal (group-number g) 0))
+				     (list (format-expand *group-formatters* fmt g) g)))
 				 (cons (cadr sgs)
 				       (cons (car sgs)
 					     (cddr sgs))))))))
     (when group
       (switch-to-group group))))
+
+;; (defcommand grouplist (&optional (fmt *group-format*)) (:rest)
+;;   "Allow the user to select a group from a list, like windowlist but                                                                                                                                           
+;;   for groups"
+;;   (let* ((sgs (screen-groups (current-screen)))
+;;          (group (second (select-from-menu
+;;                          (current-screen)
+;;                          (mapcar (lambda (g)
+;; 				   (list
+;; 				    (when (not (equal (group-number g) 0) (format-expand *group-formatters* fmt g) g))))
+;;                                  (cons (cadr sgs)
+;;                                        (cons (car sgs)
+;;                                              (cddr sgs))))))))
+;;     (when group
+;;       (switch-to-group group))))
+
+
+
+
 
 ;; To Command groups is deprecated as not functional
 (defcommand-alias groups grouplist)

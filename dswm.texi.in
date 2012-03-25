@@ -14,6 +14,7 @@
 This is the Deep Space Window Manager user manual.
 
 Copyright @copyright{} 2000-2008 Shawn Betts
+Copyright @copyright{} 2010-2012 Alexander aka 'CosmonauT' Vynnyk
 
 Permission is granted to make and distribute verbatim
 copies of this manual provided the copyright notice and
@@ -55,6 +56,7 @@ translation approved by the Free Software Foundation.
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 2000-2008 Shawn Betts
+Copyright @copyright{} 20010-2012 Alexander aka 'CosmonauT' Vynnyk
 
 Permission is granted to make and distribute verbatim
 copies of this manual provided the copyright notice and
@@ -294,7 +296,7 @@ Calls the @code{set-prefix-key} function (and sets a new keyboard prefix)
 @section Contact the DSWM developers
 The DSWM home page is @url{http://dswm.nongnu.org/}.
 
-You can reach Shawn Betts at @email{sabetts at vcn.bc.ca}.
+You can reach Alexander Vynnyk at @email{cosmonaut dot ok at gmail.com}.
 
 The DSWM mailing list is @email{dswm-devel@@nongnu.org} which
 you can subscribe to at

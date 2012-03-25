@@ -1,5 +1,5 @@
 ;; Copyright (C) 2003-2008 Shawn Betts
-;; Copyright (C) 2010-2011 Alexander aka CosmonauT Vynnyk
+;; Copyright (C) 2010-2012 Alexander aka CosmonauT Vynnyk
 ;;
 ;;  This file is part of dswm.
 ;;
@@ -40,7 +40,7 @@ loaded. When CATCH-ERRORS is nil, errors are left to be handled further up. "
   (let* ((user-rc (file-exists-p (data-dir-file "init" "lisp")))
 	 (user-initrc (file-exists-p (merge-pathnames (user-homedir-pathname)
 						   #p".dswm")))
-         (etc-rc (file-exists-p #p"/etc/dswm/dswm.conf"))
+         (etc-rc (file-exists-p #p"/etc/dss/dswm/dswm.lisp"))
          (rc (or user-initrc user-rc))
 	 (startup-cmd (file-exists-p (data-dir-file "startup" "lisp"))))
     (progn
