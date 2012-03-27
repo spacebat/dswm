@@ -1,5 +1,10 @@
 ;;; -*- Mode: Lisp -*-
 
+(defpackage :dswm-system
+  (:use :cl :asdf))
+
+(in-package :dswm-system)
+
 ;; This is a hack for debian because it calls cmucl's clx
 ;; cmucl-clx. *very* annoying. I don't actually know if debian still
 ;; does this.
