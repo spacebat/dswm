@@ -1,4 +1,4 @@
-LISP=/usr/bin/clisp
+LISP=/usr/local/bin/sbcl
 
 clisp_BUILDOPTS=-K base -on-error exit ./make-image.lisp
 sbcl_BUILDOPTS=--load ./make-image.lisp
@@ -29,17 +29,17 @@ time.lisp color.lisp module.lisp dswm.lisp
 all: deps dswm
 
 deps:	install-deps.lisp
-	$(LISP) $(clisp_BUILDOPTS)
+	$(LISP) $(sbcl_BUILDOPTS)
 
 dswm.info: dswm.texi
 	makeinfo dswm.texi
 
 # FIXME: This rule is too hardcoded
 dswm.texi: dswm.texi.in
-	$(LISP) $(clisp_INFOOPTS)
+	$(LISP) $(sbcl_INFOOPTS)
 
 dswm: $(FILES)
-	$(LISP) $(clisp_BUILDOPTS)
+	$(LISP) $(sbcl_BUILDOPTS)
 
 release:
 	git tag -a -m "version 0.0.4-git" 0.0.4-git

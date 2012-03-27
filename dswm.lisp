@@ -32,6 +32,14 @@
 
 ;;; Main
 
+(defmacro startup-only (&rest body)
+  "function, which runs code, just when DSWM starting.
+Not when command loadrc runs, reinit runs after crash etc.
+Useful for run programs on startup etc."
+  `(defun run-code-just-when-start ()
+     (progn
+       ,@body)))
+
 (defun load-rc-file (&optional (catch-errors t) (reload nil))
   "Load the user's .dswm file or the system wide one if that
 doesn't exist. Returns a values list: whether the file loaded (t if no
@@ -65,14 +73,6 @@ loaded. When CATCH-ERRORS is nil, errors are left to be handled further up. "
 	(values t nil nil))
       (when (not reload)
 	(run-code-just-when-start)))))
-
-(defmacro startup-only (&rest body)
-  "function, which runs code, just when DSWM starting.
-Not when command loadrc runs, reinit runs after crash etc.
-Useful for run programs on startup etc."
-  `(defun run-code-just-when-start ()
-     (progn
-       ,@body)))
 
 (defun error-handler (display error-key &rest key-vals &key asynchronous &allow-other-keys)
   "Handle X errors"
