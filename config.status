@@ -439,7 +439,7 @@ Copyright (C) 2010 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/cosmonaut/dev/dss/dswm'
+ac_pwd='/home/wraith/dev/dss/dswm'
 srcdir='.'
 test -n "$AWK" || AWK=awk
 # The default lists apply if the user does not specify any file.
@@ -602,11 +602,11 @@ S["LTLIBOBJS"]=""
 S["LIBOBJS"]=""
 S["XDPYINFO"]="yes"
 S["MAKEINFO"]=""
-S["CLISP"]="/usr/bin/clisp"
-S["SBCL"]="/usr/local/bin/sbcl"
+S["CLISP"]=""
+S["SBCL"]="/usr/bin/sbcl"
 S["DSWM_BIN_DIR"]=""
 S["LISP"]="sbcl"
-S["LISP_PROGRAM"]="/usr/local/bin/sbcl"
+S["LISP_PROGRAM"]="/usr/bin/sbcl"
 S["MODULES_DIR"]=""
 S["MAKE_ALL_DEPS"]="dswm"
 S["target_alias"]=""
