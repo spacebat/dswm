@@ -725,6 +725,10 @@ display a message whenever you switch frames:
   `(if (not (member ,arg ,list))
       (setq ,list (cons ,arg ,list))))
 
+(defmacro when-not-null (value body)
+  `(when (not (null ,value))
+     ,body))
+
 (defmacro remove-from-list (list arg)
   "Removes element from list"
   `(labels

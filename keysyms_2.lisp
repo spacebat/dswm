@@ -1,4 +1,3 @@
-;;; -*- Mode: LISP; Syntax: Common-lisp; Package: dswm.modules.web -*-
 ;; Copyright (C) 2010-2012 Alexander aka CosmonauT Vynnyk
 ;;
 ;;  This file is part of dswm.
@@ -26,75 +25,194 @@
 ;;
 ;; Code:
 
-(in-package #:dswm)
+(in-package #:dswm-user)
 
-(defvar *key-name-syms* nil
+(defmacro when-not-null (value body)
+  `(when (not (null ,value))
+     ,body))
+
+(defvar *keys* nil
   "Defines list of keynames and related keysyms to it")
 
 (defstruct dswm-key
-  "defines keyname->keysyms"
-  name syms)
+  "defines relations keyname/dswm-keyname/keysyms"
+  dswm-name keysym-name syms)
 
-(defun get-dswm-key-by-name (name dswm-key-names)
-  "Gets dswm key structure by key name"
-  (cond ((null (car dswm-key-names)) nil)
-	((not (equal name (dswm-key-name (car dswm-key-names))))
-	 (get-dswm-key-by-name name (cdr dswm-key-names)))
-	(t (car dswm-key-names))))
+(defun get-key-by-keysym-name (name keys-list)
+  "Gets dswm key structure by keyname"
+  (cond ((null (car keys-list)) nil)
+	((not (equal name (dswm-key-keysym-name (car keys-list))))
+	 (get-key-by-keysym-name name (cdr keys-list)))
+	(t (car keys-list))))
 
-(defun get-dswm-key-by-keysym (keysym dswm-key-names)
+(defun get-key-by-dswm-name (dswm-name keys-list)
+  "Gets dswm key structure by dswm keyname"
+  (cond ((null (car keys-list)) nil)
+	((not (equal dswm-name (dswm-key-dswm-name (car keys-list))))
+	 (get-key-by-dswm-name dswm-name (cdr keys-list)))
+	(t (car keys-list))))
+
+(defun get-key-by-keysym (keysym keys-list)
   "Gets dswm key structure by keysym"
-  (cond ((null (car dswm-key-names)) nil)
-	((not (member keysym (dswm-key-syms (car dswm-key-names))))
-	 (get-dswm-key-by-keysym keysym (cdr dswm-key-names)))
-	(t (car dswm-key-names))))
+  (cond ((null (car keys-list)) nil)
+	((not (member keysym (dswm-key-syms (car keys-list))))
+	 (get-key-by-keysym keysym (cdr keys-list)))
+	(t (car keys-list))))
 
-(defun define-keysym (keysym name)
+(defun remove-keysym (keysym)
+  (dolist (key *keys*)
+    (when (member keysym (dswm-key-syms key))
+      (progn
+	(remove-from-list *keys* key)
+	(add-to-list *keys*
+		     (make-dswm-key
+		      :dswm-name (dswm-key-dswm-name key)
+		      :keysym-name (dswm-key-keysym-name key)
+		      :syms (remove-from-list (dswm-key-syms key) keysym)))))))
+	
+(defun define-keysym (keysym keysym-name &optional dswm-name)
   "Define a mapping from a keysym name to a keysym."
-  (let ((key-by-name (get-dswm-key-by-name name *key-name-syms*))
-	(key-by-sym (get-dswm-key-by-keysym keysym *key-name-syms*))
-	(new-key (make-dswm-key :name name :syms (list keysym))))
-    (cond
-      ((not (null key-by-name))
-       (remove-from-list *key-name-syms* key-by-name)
-       (add-to-list *key-name-syms* new-key))
-      ((not (null key-by-sym))
-       (remove-from-list *key-name-syms* key-by-sym)
-       (add-to-list *key-name-syms*
-       		    (make-dswm-key
-       		     :name (dswm-key-name key-by-sym)
-       		     :syms (remove-from-list (dswm-key-syms key-by-sym) keysym)))
-       (add-to-list *key-name-syms* new-key))
-      (t
-       (add-to-list *key-name-syms* new-key)))))
+  (let ((key (get-key-by-keysym-name keysym-name *keys*)))
+    (if (not (null key))
+	(let ((new-syms
+	       (if (not (member keysym (dswm-key-syms key)))
+		   (cons keysym (dswm-key-syms key))
+		   (dswm-key-syms key)))
+	      (new-dswm-name (if (null dswm-name) (dswm-key-dswm-name key) dswm-name)))
+	  (remove-from-list *keys* key)
+	  (remove-keysym keysym)
+	  (add-to-list *keys*
+		       (make-dswm-key
+			:dswm-name new-dswm-name
+			:keysym-name (dswm-key-keysym-name key)
+			:syms new-syms
+			)))
+	(add-to-list *keys* (make-dswm-key
+			     :dswm-name dswm-name
+			     :keysym-name keysym-name
+			     :syms (list keysym))))))
+	  
 
 (defun keysym-name->keysym (name)
   "Return the keysym corresponding to NAME."
-  (let ((sym (get-dswm-key-by-name name *key-name-syms*)))
-    (if (not (null sym))
-	(car (dswm-key-syms sym))
-	nil)))
+  (let ((key (get-key-by-keysym-name name *keys*)))
+    (when-not-null key (car (dswm-key-syms key)))))
+
+(defun dswm-name->keysym (name)
+  "Return the keysym corresponding to NAME."
+  (let ((key-by-dswm-name (get-key-by-dswm-name name *keys*))
+  	(key-by-name (get-key-by-keysym-name name *keys*)))
+    (if (null key-by-dswm-name)
+  	(car (dswm-key-syms key-by-name))
+  	(car (dswm-key-syms key-by-dswm-name)))))
 
 (defun keysym->keysym-name (keysym)
   "Return the name corresponding to KEYSYM."
-  (let ((name (get-dswm-key-by-keysym keysym *key-name-syms*)))
-    (if (not (null name))
-	(dswm-key-name name)
-	nil)))
+  (let ((key (get-key-by-keysym keysym *keys*)))
+    (when-not-null key (dswm-key-keysym-name key))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun keysym->dswm-name (keysym)
+  "Return the name corresponding to KEYSYM."
+  (let ((key (get-key-by-keysym keysym *keys*)))
+    (when-not-null key (dswm-key-dswm-name key))))
+
+(defun dswm-name->keysym-name (dswm-name)
+  (let ((key (get-key-by-dswm-name dswm-name *keys*)))
+    (when-not-null key (dswm-key-keysym-name key))))
+
+(defun keysym-name->dswm-name (name)
+  (let ((key (get-key-by-keysym-name name *keys*)))
+    (when-not-null key (dswm-key-dswm-name key))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;depreceted. Keep for back compatability;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (defvar *dswm-name->keysym-name-translations* (make-hash-table :test #'equal)
+;;   "Hashtable mapping from dswm key names to keysym names.")
+
+;; (defun define-keysym-name (dswm-name keysym-name)
+;;   "Define a mapping from a DSWM-NAME to KEYSYM-NAME.
+;; This function is used to translate Emacs-like names to keysym
+;; names."
+;;   (setf (gethash dswm-name *dswm-name->keysym-name-translations*)
+;;         keysym-name))
+
+
+;; (defun dswm-name->keysym (dswm-name)
+;;   "Return the keysym corresponding to DSWM-NAME.
+;; If no mapping for DSWM-NAME exists, then fallback by calling
+;; KEYSYM-NAME->KEYSYM."
+;;   (let ((key-by-dswm-name (get-key-by-dswm-name dswm-name *keys*))
+;; 	(key-by-name (get-key-by-keysym-name dswm-name *keys*)))
+;;     (if (null key-by-dswm-name)
+;; 	(dswm-key-keysym-name key-by-name)
+;; 	(dswm-key-dswm-name key-by-dswm-name))))
+
+;; (defun keysym->dswm-name (keysym)
+;;   "Return the dswm key name corresponding to KEYSYM.
+;; If no mapping for the dswm key name exists, then fall back by
+;; calling KEYSYM->KEYSYM-NAME."
+;;   (let ((key (get-key-by-keysym keysym *keys*)))
+;;     (when-not-null key (dswm-key-dswm-name key))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;/Depreceted. Keep for back compatability;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (define-keysym-name "RET" "Return")
+;; (define-keysym-name "ESC" "Escape")
+;; (define-keysym-name "TAB" "Tab")
+;; (define-keysym-name "DEL" "BackSpace")
+;; (define-keysym-name "SPC" "space")
+;; (define-keysym-name "!" "exclam")
+;; (define-keysym-name "\"" "quotedbl")
+;; (define-keysym-name "$" "dollar")
+;; (define-keysym-name "%" "percent")
+;; (define-keysym-name "&" "ampersand")
+;; (define-keysym-name "'" "quoteright")   ;deprecated
+;; (define-keysym-name "'" "apostrophe")
+;; (define-keysym-name "`" "quoteleft")    ;deprecated
+;; (define-keysym-name "`" "grave")
+;; (define-keysym-name "&" "ampersand")
+;; (define-keysym-name "(" "parenleft")
+;; (define-keysym-name ")" "parenright")
+;; (define-keysym-name "*" "asterisk")
+;; (define-keysym-name "+" "plus")
+;; (define-keysym-name "," "comma")
+;; (define-keysym-name "-" "minus")
+;; (define-keysym-name "." "period")
+;; (define-keysym-name "/" "slash")
+;; (define-keysym-name ":" "colon")
+;; (define-keysym-name ";" "semicolon")
+;; (define-keysym-name "<" "less")
+;; (define-keysym-name "=" "equal")
+;; (define-keysym-name ">" "greater")
+;; (define-keysym-name "?" "question")
+;; (define-keysym-name "@" "at")
+;; (define-keysym-name "[" "bracketleft")
+;; (define-keysym-name "\\" "backslash")
+;; (define-keysym-name "]" "bracketright")
+;; (define-keysym-name "^" "asciicircum")
+;; (define-keysym-name "_" "underscore")
+;; (define-keysym-name "#" "numbersign")
+;; (define-keysym-name "{" "braceleft")
+;; (define-keysym-name "|" "bar")
+;; (define-keysym-name "}" "braceright")
+;; (define-keysym-name "~" "asciitilde")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-keysym #xffffff "VoidSymbol")   ;Void symbol
-(define-keysym #xff08 "BackSpace")      ;Back space, back char
-(define-keysym #xff09 "Tab")
+(define-keysym #xff08 "BackSpace" "DEL") ;Back space, back char
+(define-keysym #xff09 "Tab" "TAB")
 (define-keysym #xff0a "Linefeed")       ;Linefeed, LF
 (define-keysym #xff0b "Clear")
-(define-keysym #xff0d "Return")         ;Return, enter
+(define-keysym #xff0d "Return" "RET")         ;Return, enter
 (define-keysym #xff13 "Pause")          ;Pause, hold
 (define-keysym #xff14 "Scroll_Lock")
 (define-keysym #xff15 "Sys_Req")
-(define-keysym #xff1b "Escape")
+(define-keysym #xff1b "Escape" "ESC")
 (define-keysym #xffff "Delete")         ;Delete, rubout
 (define-keysym #xff20 "Multi_key")      ;Multi-key character compose
 (define-keysym #xff37 "Codeinput")
@@ -364,23 +482,23 @@
 (define-keysym #xfd1c "3270_CursorSelect")
 (define-keysym #xfd1d "3270_PrintScreen")
 (define-keysym #xfd1e "3270_Enter")
-(define-keysym #x0020 "space")          ;U+0020 SPACE
-(define-keysym #x0021 "exclam")         ;U+0021 EXCLAMATION MARK
-(define-keysym #x0022 "quotedbl")       ;U+0022 QUOTATION MARK
-(define-keysym #x0023 "numbersign")     ;U+0023 NUMBER SIGN
-(define-keysym #x0024 "dollar")         ;U+0024 DOLLAR SIGN
-(define-keysym #x0025 "percent")        ;U+0025 PERCENT SIGN
-(define-keysym #x0026 "ampersand")      ;U+0026 AMPERSAND
-(define-keysym #x0027 "apostrophe")     ;U+0027 APOSTROPHE
-(define-keysym #x0027 "quoteright")     ;deprecated
-(define-keysym #x0028 "parenleft")      ;U+0028 LEFT PARENTHESIS
-(define-keysym #x0029 "parenright")     ;U+0029 RIGHT PARENTHESIS
-(define-keysym #x002a "asterisk")       ;U+002A ASTERISK
-(define-keysym #x002b "plus")           ;U+002B PLUS SIGN
-(define-keysym #x002c "comma")          ;U+002C COMMA
-(define-keysym #x002d "minus")          ;U+002D HYPHEN-MINUS
-(define-keysym #x002e "period")         ;U+002E FULL STOP
-(define-keysym #x002f "slash")          ;U+002F SOLIDUS
+(define-keysym #x0020 "space" "SPC")          ;U+0020 SPACE
+(define-keysym #x0021 "exclam" "!")         ;U+0021 EXCLAMATION MARK
+(define-keysym #x0022 "quotedbl" "\"")       ;U+0022 QUOTATION MARK
+(define-keysym #x0023 "numbersign" "#")     ;U+0023 NUMBER SIGN
+(define-keysym #x0024 "dollar" "$")         ;U+0024 DOLLAR SIGN
+(define-keysym #x0025 "percent" "%")        ;U+0025 PERCENT SIGN
+(define-keysym #x0026 "ampersand" "&")      ;U+0026 AMPERSAND
+(define-keysym #x0027 "apostrophe"  "'")     ;U+0027 APOSTROPHE
+(define-keysym #x0027 "quoteright" "'")     ;deprecated
+(define-keysym #x0028 "parenleft" "(")      ;U+0028 LEFT PARENTHESIS
+(define-keysym #x0029 "parenright" ")")     ;U+0029 RIGHT PARENTHESIS
+(define-keysym #x002a "asterisk" "*")       ;U+002A ASTERISK
+(define-keysym #x002b "plus" "+")           ;U+002B PLUS SIGN
+(define-keysym #x002c "comma" ",")          ;U+002C COMMA
+(define-keysym #x002d "minus" "-")          ;U+002D HYPHEN-MINUS
+(define-keysym #x002e "period" ".")         ;U+002E FULL STOP
+(define-keysym #x002f "slash" "/")          ;U+002F SOLIDUS
 (define-keysym #x0030 "0")              ;U+0030 DIGIT ZERO
 (define-keysym #x0031 "1")              ;U+0031 DIGIT ONE
 (define-keysym #x0032 "2")              ;U+0032 DIGIT TWO
@@ -391,13 +509,13 @@
 (define-keysym #x0037 "7")              ;U+0037 DIGIT SEVEN
 (define-keysym #x0038 "8")              ;U+0038 DIGIT EIGHT
 (define-keysym #x0039 "9")              ;U+0039 DIGIT NINE
-(define-keysym #x003a "colon")          ;U+003A COLON
-(define-keysym #x003b "semicolon")      ;U+003B SEMICOLON
-(define-keysym #x003c "less")           ;U+003C LESS-THAN SIGN
-(define-keysym #x003d "equal")          ;U+003D EQUALS SIGN
-(define-keysym #x003e "greater")        ;U+003E GREATER-THAN SIGN
-(define-keysym #x003f "question")       ;U+003F QUESTION MARK
-(define-keysym #x0040 "at")             ;U+0040 COMMERCIAL AT
+(define-keysym #x003a "colon" ":")          ;U+003A COLON
+(define-keysym #x003b "semicolon" ";")      ;U+003B SEMICOLON
+(define-keysym #x003c "less" "<")           ;U+003C LESS-THAN SIGN
+(define-keysym #x003d "equal" "=")          ;U+003D EQUALS SIGN
+(define-keysym #x003e "greater" ">")        ;U+003E GREATER-THAN SIGN
+(define-keysym #x003f "question" "?")       ;U+003F QUESTION MARK
+(define-keysym #x0040 "at" "@")             ;U+0040 COMMERCIAL AT
 (define-keysym #x0041 "A")              ;U+0041 LATIN CAPITAL LETTER A
 (define-keysym #x0042 "B")              ;U+0042 LATIN CAPITAL LETTER B
 (define-keysym #x0043 "C")              ;U+0043 LATIN CAPITAL LETTER C
@@ -424,13 +542,13 @@
 (define-keysym #x0058 "X")              ;U+0058 LATIN CAPITAL LETTER X
 (define-keysym #x0059 "Y")              ;U+0059 LATIN CAPITAL LETTER Y
 (define-keysym #x005a "Z")              ;U+005A LATIN CAPITAL LETTER Z
-(define-keysym #x005b "bracketleft")    ;U+005B LEFT SQUARE BRACKET
-(define-keysym #x005c "backslash")      ;U+005C REVERSE SOLIDUS
-(define-keysym #x005d "bracketright")   ;U+005D RIGHT SQUARE BRACKET
-(define-keysym #x005e "asciicircum")    ;U+005E CIRCUMFLEX ACCENT
-(define-keysym #x005f "underscore")     ;U+005F LOW LINE
-(define-keysym #x0060 "grave")          ;U+0060 GRAVE ACCENT
-(define-keysym #x0060 "quoteleft")      ;deprecated
+(define-keysym #x005b "bracketleft" "[")    ;U+005B LEFT SQUARE BRACKET
+(define-keysym #x005c "backslash" "\\")      ;U+005C REVERSE SOLIDUS
+(define-keysym #x005d "bracketright" "]")   ;U+005D RIGHT SQUARE BRACKET
+(define-keysym #x005e "asciicircum" "^")    ;U+005E CIRCUMFLEX ACCENT
+(define-keysym #x005f "underscore" "_")     ;U+005F LOW LINE
+(define-keysym #x0060 "grave" "`")          ;U+0060 GRAVE ACCENT
+(define-keysym #x0060 "quoteleft" "`")      ;deprecated
 (define-keysym #x0061 "a")              ;U+0061 LATIN SMALL LETTER A
 (define-keysym #x0062 "b")              ;U+0062 LATIN SMALL LETTER B
 (define-keysym #x0063 "c")              ;U+0063 LATIN SMALL LETTER C
@@ -457,10 +575,10 @@
 (define-keysym #x0078 "x")              ;U+0078 LATIN SMALL LETTER X
 (define-keysym #x0079 "y")              ;U+0079 LATIN SMALL LETTER Y
 (define-keysym #x007a "z")              ;U+007A LATIN SMALL LETTER Z
-(define-keysym #x007b "braceleft")      ;U+007B LEFT CURLY BRACKET
-(define-keysym #x007c "bar")            ;U+007C VERTICAL LINE
-(define-keysym #x007d "braceright")     ;U+007D RIGHT CURLY BRACKET
-(define-keysym #x007e "asciitilde")     ;U+007E TILDE
+(define-keysym #x007b "braceleft" "{")      ;U+007B LEFT CURLY BRACKET
+(define-keysym #x007c "bar" "|")            ;U+007C VERTICAL LINE
+(define-keysym #x007d "braceright" "}")     ;U+007D RIGHT CURLY BRACKET
+(define-keysym #x007e "asciitilde" "~")     ;U+007E TILDE
 (define-keysym #x00a0 "nobreakspace")   ;U+00A0 NO-BREAK SPACE
 (define-keysym #x00a1 "exclamdown")  ;U+00A1 INVERTED EXCLAMATION MARK
 (define-keysym #x00a2 "cent")           ;U+00A2 CENT SIGN
@@ -2097,5 +2215,3 @@
 (define-keysym #x100000AC "usldead_asciitilde")
 (define-keysym #x1000FE2C "usldead_cedilla")
 (define-keysym #x1000FEB0 "usldead_ring")
-
-
