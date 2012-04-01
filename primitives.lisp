@@ -721,10 +721,12 @@ display a message whenever you switch frames:
   (nconc list (list arg)))
 
 (defmacro add-to-list (list arg)
+  "Adds element to list"
   `(if (not (member ,arg ,list))
       (setq ,list (cons ,arg ,list))))
 
 (defmacro remove-from-list (list arg)
+  "Removes element from list"
   `(labels
     ((rm-from-list (list arg)
 		   (cond
