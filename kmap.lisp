@@ -194,7 +194,9 @@ Now when you type c-j C-z, you'll see the text ``Zzzzz...'' pop up."
             (append (if binding
                         (delete binding (kmap-bindings map))
                         (kmap-bindings map))
+		    ;; TODO: HERE! we have to make a cycle for keys:
                     (list (make-binding :key key :command command))))
+      		    ;; /TODO: HERE! we have to make a cycle for keys
       (setf (kmap-bindings map) (delete binding (kmap-bindings map))))
     ;; We need to tell the X server when changing the top-map bindings.
     (when (eq map *top-map*)

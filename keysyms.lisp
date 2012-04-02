@@ -1,4 +1,3 @@
-;; Copyright (C) 2006-2008 Matthew Kennedy
 ;; Copyright (C) 2010-2012 Alexander aka CosmonauT Vynnyk
 ;;
 ;;  This file is part of dswm.
@@ -28,28 +27,105 @@
 
 (in-package #:dswm)
 
-(defvar *keysym-name-translations* (make-hash-table))
-(defvar *name-keysym-translations* (make-hash-table :test #'equal))
+(defvar *keys* nil
+  "Defines list of keynames and related keysyms to it")
 
-(defun define-keysym (keysym name)
+(defstruct dswm-key
+  "defines relations keyname/dswm-keyname/keysyms"
+  dswm-name keysym-name syms)
+
+(defun get-key-by-keysym-name (name keys-list)
+  "Gets dswm key structure by keyname"
+  (cond ((null (car keys-list)) nil)
+	((not (equal name (dswm-key-keysym-name (car keys-list))))
+	 (get-key-by-keysym-name name (cdr keys-list)))
+	(t (car keys-list))))
+
+(defun get-key-by-dswm-name (dswm-name keys-list)
+  "Gets dswm key structure by dswm keyname"
+  (cond ((null (car keys-list)) nil)
+	((not (equal dswm-name (dswm-key-dswm-name (car keys-list))))
+	 (get-key-by-dswm-name dswm-name (cdr keys-list)))
+	(t (car keys-list))))
+
+(defun get-key-by-keysym (keysym keys-list)
+  "Gets dswm key structure by keysym"
+  (cond ((null (car keys-list)) nil)
+	((not (member keysym (dswm-key-syms (car keys-list))))
+	 (get-key-by-keysym keysym (cdr keys-list)))
+	(t (car keys-list))))
+
+(defun remove-keysym (keysym)
+  (dolist (key *keys*)
+    (when (member keysym (dswm-key-syms key))
+      (progn
+	(remove-from-list *keys* key)
+	(add-to-list *keys*
+		     (make-dswm-key
+		      :dswm-name (dswm-key-dswm-name key)
+		      :keysym-name (dswm-key-keysym-name key)
+		      :syms (remove-from-list (dswm-key-syms key) keysym)))))))
+	
+(defun define-keysym (keysym keysym-name &optional dswm-name)
   "Define a mapping from a keysym name to a keysym."
-  (setf (gethash keysym *keysym-name-translations*) name
-        (gethash name *name-keysym-translations*) keysym))
+  (let ((key (get-key-by-keysym-name keysym-name *keys*)))
+    (if (not (null key))
+	(let ((new-syms
+	       (if (not (member keysym (dswm-key-syms key)))
+		   (cons keysym (dswm-key-syms key))
+		   (dswm-key-syms key)))
+	      (new-dswm-name (if (null dswm-name) (dswm-key-dswm-name key) dswm-name)))
+	  (remove-from-list *keys* key)
+	  (remove-keysym keysym)
+	  (add-to-list *keys*
+		       (make-dswm-key
+			:dswm-name new-dswm-name
+			:keysym-name (dswm-key-keysym-name key)
+			:syms new-syms
+			)))
+	(add-to-list *keys* (make-dswm-key
+			     :dswm-name dswm-name
+			     :keysym-name keysym-name
+			     :syms (list keysym))))))
+	  
 
 (defun keysym-name->keysym (name)
   "Return the keysym corresponding to NAME."
-  (multiple-value-bind (value present-p)
-      (gethash name *name-keysym-translations*)
-    (declare (ignore present-p))
-    value))
+  (let ((key (get-key-by-keysym-name name *keys*)))
+    (when-not-null key (car (dswm-key-syms key)))))
+
+(defun dswm-name->keysym (name)
+  "Return the keysym corresponding to NAME."
+  (let ((key-by-dswm-name (get-key-by-dswm-name name *keys*))
+  	(key-by-name (get-key-by-keysym-name name *keys*)))
+    (if (null key-by-dswm-name)
+  	(car (dswm-key-syms key-by-name))
+  	(car (dswm-key-syms key-by-dswm-name)))))
 
 (defun keysym->keysym-name (keysym)
   "Return the name corresponding to KEYSYM."
-  (multiple-value-bind (value present-p)
-      (gethash keysym *keysym-name-translations*)
-    (declare (ignore present-p))
-    value))
+  (let ((key (get-key-by-keysym keysym *keys*)))
+    (when-not-null key (dswm-key-keysym-name key))))
 
+(defun keysym->dswm-name (keysym)
+  "Return the name corresponding to KEYSYM."
+  (let ((key (get-key-by-keysym keysym *keys*)))
+    (when-not-null key
+		   (or (dswm-key-dswm-name key)
+		       (keysym->keysym-name keysym)))))
+
+(defun dswm-name->keysym-name (dswm-name)
+  (let ((key (get-key-by-dswm-name dswm-name *keys*)))
+    (when-not-null key (dswm-key-keysym-name key))))
+
+(defun keysym-name->dswm-name (name)
+  (let ((key (get-key-by-keysym-name name *keys*)))
+    (when-not-null key
+		   (or (dswm-key-dswm-name key)
+		       (dswm-key-keysym-name key)))))
+;;;;
+;; TODO: make it with dswm-name part
+;;;;
 (define-keysym #xffffff "VoidSymbol")   ;Void symbol
 (define-keysym #xff08 "BackSpace")      ;Back space, back char
 (define-keysym #xff09 "Tab")
