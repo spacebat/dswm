@@ -25,7 +25,7 @@
 ;;
 ;; Code:
 
-(in-package #:dswm-user)
+(in-package #:dswm)
 
 (defmacro when-not-null (value body)
   `(when (not (null ,value))
