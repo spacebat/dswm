@@ -134,7 +134,7 @@ kbd-parse if the key failed to parse."
   (let* ((p (when (> (length string) 2)
               (position #\- string :from-end t :end (- (length string) 1))))
          (mods (parse-mods string (if p (1+ p) 0)))
-         (keysym (dswm-name->keysym (subseq string (if p (1+ p) 0)))))
+         (keysym (car (dswm-name->keysyms (subseq string (if p (1+ p) 0))))))
     (if keysym
         (apply 'make-key :keysym keysym mods)
         (signal 'kbd-parse-error :string string))))

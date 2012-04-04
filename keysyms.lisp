@@ -89,18 +89,28 @@
 			     :syms (list keysym))))))
 	  
 
-(defun keysym-name->keysym (name)
-  "Return the keysym corresponding to NAME."
+(defun keysym-name->keysyms (name)
+  "Return keysyms list corresponding to NAME."
   (let ((key (get-key-by-keysym-name name *keys*)))
-    (when-not-null key (car (dswm-key-syms key)))))
+    (when-not-null key (dswm-key-syms key))))
 
-(defun dswm-name->keysym (name)
-  "Return the keysym corresponding to NAME."
+(defun dswm-name->keysyms (name)
+  "Return the keysym corresponding to DSWM NAME."
   (let ((key-by-dswm-name (get-key-by-dswm-name name *keys*))
   	(key-by-name (get-key-by-keysym-name name *keys*)))
     (if (null key-by-dswm-name)
-  	(car (dswm-key-syms key-by-name))
-  	(car (dswm-key-syms key-by-dswm-name)))))
+  	(dswm-key-syms key-by-name)
+  	(dswm-key-syms key-by-dswm-name))))
+
+;;;; Deprecated. Keep for back compatability
+(defun keysym-name->keysym (name)
+  "Return first keysym of keysyms list corresponding to NAME."
+  (car (keysym-name->keysyms name)))
+
+(defun dswm-name->keysym (name)
+  "Return first keysym of keysyms list corresponding to DSWM NAME."
+  (car (dswm-name->keysyms name)))
+;;;; /Deprecated
 
 (defun keysym->keysym-name (keysym)
   "Return the name corresponding to KEYSYM."
