@@ -116,7 +116,7 @@ otherwise specified."
     (if (and (>= index 0)
              (< index (length *group-number-map*)))
         (format nil "~:[~;-~]~a" (minusp num) (elt *group-number-map* index))
-        num)))
+        (princ-to-string num))))
 
 (defun fmt-group-status (group)
   (let ((screen (group-screen group)))
@@ -333,8 +333,8 @@ exists. Returns the new group."
 (defun group-forward-with-window (current list)
   "Switch to the next group in the list, if one exists, and moves the
 current window of the current group to the new one."
-  (let ((win (group-current-window current))
-	(next (group-forward current list)))
+  (let ((next (group-forward current list))
+	(win (group-current-window current)))
     (when (and next win)
       (move-window-to-group win next)
       (really-raise-window win))))

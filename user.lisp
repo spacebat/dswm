@@ -104,7 +104,8 @@ menu, the error is re-signalled."
 
 (defcommand ratclick (&optional (button 1)) (:number)
   "Simulate a pointer button event at the current pointer
-location. Note: this function rarely works."
+location. Note: this function is unlikely to work unless
+your X server and CLX implementation support XTEST."
   (when (current-window)
     (send-fake-click (current-window) button)))
 
@@ -233,8 +234,11 @@ such a case, kill the shell command to resume DSWM."
 (defcommand keyboard-quit () ()
     ""
   ;; This way you can exit from command mode
-  (when (pop-top-map)
-    (message "Exited.")))
+  (let ((in-command-mode (eq *top-map* *root-map*)))
+    (when (pop-top-map)
+      (if in-command-mode
+        (run-hook *command-mode-end-hook*)
+        (message "Exited.")))))
 
 (defcommand-alias abort keyboard-quit)
 

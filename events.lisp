@@ -351,7 +351,7 @@ converted to an atom is removed."
      (dformat 4 "new hints: ~s~%" (window-normal-hints window))
      (window-sync window :normal-hints))
     (:wm_hints
-     (setf (window-hints window) (xlib:wm-hints (window-xwin window)))
+     ;; (setf (window-hints window) (xlib:wm-hints (window-xwin window))) ;; Old code
      (maybe-set-urgency window))
     (:wm_class
      (setf (window-class window) (xwin-class (window-xwin window))
@@ -594,7 +594,11 @@ the window in it's frame."
   (let (screen ml win)
     (cond
       ((and (setf screen (find-screen window)) (not child))
+       ;; (group-button-press (screen-current-group screen) x y :root)
+;;;;New code;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (group-button-press (screen-current-group screen) x y :root)
+       (run-hook-with-args *root-click-hook* screen code x y))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (run-hook-with-args *root-click-hook* screen code x y))
       ((setf ml (find-mode-line-window window))
        (run-hook-with-args *mode-line-click-hook* ml code x y))
