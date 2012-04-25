@@ -25,117 +25,18 @@
 ;;
 ;; Code:
 
-(in-package #:dswm)
+(in-package :dswm)
 
-(defvar *keys* nil
-  "Defines list of keynames and related keysyms to it")
-
-(defstruct dswm-key
-  "defines relations keyname/dswm-keyname/keysyms"
-  dswm-name keysym-name syms)
-
-(defun get-key-by-keysym-name (name keys-list)
-  "Gets dswm key structure by keyname"
-  (cond ((null (car keys-list)) nil)
-	((not (equal name (dswm-key-keysym-name (car keys-list))))
-	 (get-key-by-keysym-name name (cdr keys-list)))
-	(t (car keys-list))))
-
-(defun get-key-by-dswm-name (dswm-name keys-list)
-  "Gets dswm key structure by dswm keyname"
-  (cond ((null (car keys-list)) nil)
-	((not (equal dswm-name (dswm-key-dswm-name (car keys-list))))
-	 (get-key-by-dswm-name dswm-name (cdr keys-list)))
-	(t (car keys-list))))
-
-(defun get-key-by-keysym (keysym keys-list)
-  "Gets dswm key structure by keysym"
-  (cond ((null (car keys-list)) nil)
-	((not (member keysym (dswm-key-syms (car keys-list))))
-	 (get-key-by-keysym keysym (cdr keys-list)))
-	(t (car keys-list))))
-
-(defun remove-keysym (keysym)
-  (dolist (key *keys*)
-    (when (member keysym (dswm-key-syms key))
-      (progn
-	(remove-from-list *keys* key)
-	(add-to-list *keys*
-		     (make-dswm-key
-		      :dswm-name (dswm-key-dswm-name key)
-		      :keysym-name (dswm-key-keysym-name key)
-		      :syms (remove-from-list (dswm-key-syms key) keysym)))))))
-	
-(defun define-keysym (keysym keysym-name &optional dswm-name)
-  "Define a mapping from a keysym name to a keysym."
-  (let ((key (get-key-by-keysym-name keysym-name *keys*)))
-    (if (not (null key))
-	(let ((new-syms
-	       (if (not (member keysym (dswm-key-syms key)))
-		   (cons keysym (dswm-key-syms key))
-		   (dswm-key-syms key)))
-	      (new-dswm-name (if (null dswm-name) (dswm-key-dswm-name key) dswm-name)))
-	  (remove-from-list *keys* key)
-	  (remove-keysym keysym)
-	  (add-to-list *keys*
-		       (make-dswm-key
-			:dswm-name new-dswm-name
-			:keysym-name (dswm-key-keysym-name key)
-			:syms new-syms
-			)))
-	(add-to-list *keys* (make-dswm-key
-			     :dswm-name dswm-name
-			     :keysym-name keysym-name
-			     :syms (list keysym))))))
-	  
-
-(defun keysym-name->keysym (name)
-  "Return the keysym corresponding to NAME."
-  (let ((key (get-key-by-keysym-name name *keys*)))
-    (when-not-null key (car (dswm-key-syms key)))))
-
-(defun dswm-name->keysym (name)
-  "Return the keysym corresponding to NAME."
-  (let ((key-by-dswm-name (get-key-by-dswm-name name *keys*))
-  	(key-by-name (get-key-by-keysym-name name *keys*)))
-    (if (null key-by-dswm-name)
-  	(car (dswm-key-syms key-by-name))
-  	(car (dswm-key-syms key-by-dswm-name)))))
-
-(defun keysym->keysym-name (keysym)
-  "Return the name corresponding to KEYSYM."
-  (let ((key (get-key-by-keysym keysym *keys*)))
-    (when-not-null key (dswm-key-keysym-name key))))
-
-(defun keysym->dswm-name (keysym)
-  "Return the name corresponding to KEYSYM."
-  (let ((key (get-key-by-keysym keysym *keys*)))
-    (when-not-null key
-		   (or (dswm-key-dswm-name key)
-		       (keysym->keysym-name keysym)))))
-
-(defun dswm-name->keysym-name (dswm-name)
-  (let ((key (get-key-by-dswm-name dswm-name *keys*)))
-    (when-not-null key (dswm-key-keysym-name key))))
-
-(defun keysym-name->dswm-name (name)
-  (let ((key (get-key-by-keysym-name name *keys*)))
-    (when-not-null key
-		   (or (dswm-key-dswm-name key)
-		       (dswm-key-keysym-name key)))))
-;;;;
-;; TODO: make it with dswm-name part
-;;;;
 (define-keysym #xffffff "VoidSymbol")   ;Void symbol
-(define-keysym #xff08 "BackSpace")      ;Back space, back char
-(define-keysym #xff09 "Tab")
+(define-keysym #xff08 "BackSpace" "DEL") ;Back space, back char
+(define-keysym #xff09 "Tab" "TAB")
 (define-keysym #xff0a "Linefeed")       ;Linefeed, LF
 (define-keysym #xff0b "Clear")
-(define-keysym #xff0d "Return")         ;Return, enter
+(define-keysym #xff0d "Return" "RET")         ;Return, enter
 (define-keysym #xff13 "Pause")          ;Pause, hold
 (define-keysym #xff14 "Scroll_Lock")
 (define-keysym #xff15 "Sys_Req")
-(define-keysym #xff1b "Escape")
+(define-keysym #xff1b "Escape" "ESC")
 (define-keysym #xffff "Delete")         ;Delete, rubout
 (define-keysym #xff20 "Multi_key")      ;Multi-key character compose
 (define-keysym #xff37 "Codeinput")
@@ -405,23 +306,23 @@
 (define-keysym #xfd1c "3270_CursorSelect")
 (define-keysym #xfd1d "3270_PrintScreen")
 (define-keysym #xfd1e "3270_Enter")
-(define-keysym #x0020 "space")          ;U+0020 SPACE
-(define-keysym #x0021 "exclam")         ;U+0021 EXCLAMATION MARK
-(define-keysym #x0022 "quotedbl")       ;U+0022 QUOTATION MARK
-(define-keysym #x0023 "numbersign")     ;U+0023 NUMBER SIGN
-(define-keysym #x0024 "dollar")         ;U+0024 DOLLAR SIGN
-(define-keysym #x0025 "percent")        ;U+0025 PERCENT SIGN
-(define-keysym #x0026 "ampersand")      ;U+0026 AMPERSAND
-(define-keysym #x0027 "apostrophe")     ;U+0027 APOSTROPHE
-(define-keysym #x0027 "quoteright")     ;deprecated
-(define-keysym #x0028 "parenleft")      ;U+0028 LEFT PARENTHESIS
-(define-keysym #x0029 "parenright")     ;U+0029 RIGHT PARENTHESIS
-(define-keysym #x002a "asterisk")       ;U+002A ASTERISK
-(define-keysym #x002b "plus")           ;U+002B PLUS SIGN
-(define-keysym #x002c "comma")          ;U+002C COMMA
-(define-keysym #x002d "minus")          ;U+002D HYPHEN-MINUS
-(define-keysym #x002e "period")         ;U+002E FULL STOP
-(define-keysym #x002f "slash")          ;U+002F SOLIDUS
+(define-keysym #x0020 "space" "SPC")          ;U+0020 SPACE
+(define-keysym #x0021 "exclam" "!")         ;U+0021 EXCLAMATION MARK
+(define-keysym #x0022 "quotedbl" "\"")       ;U+0022 QUOTATION MARK
+(define-keysym #x0023 "numbersign" "#")     ;U+0023 NUMBER SIGN
+(define-keysym #x0024 "dollar" "$")         ;U+0024 DOLLAR SIGN
+(define-keysym #x0025 "percent" "%")        ;U+0025 PERCENT SIGN
+(define-keysym #x0026 "ampersand" "&")      ;U+0026 AMPERSAND
+(define-keysym #x0027 "apostrophe"  "'")     ;U+0027 APOSTROPHE
+(define-keysym #x0027 "quoteright" "'")     ;deprecated
+(define-keysym #x0028 "parenleft" "(")      ;U+0028 LEFT PARENTHESIS
+(define-keysym #x0029 "parenright" ")")     ;U+0029 RIGHT PARENTHESIS
+(define-keysym #x002a "asterisk" "*")       ;U+002A ASTERISK
+(define-keysym #x002b "plus" "+")           ;U+002B PLUS SIGN
+(define-keysym #x002c "comma" ",")          ;U+002C COMMA
+(define-keysym #x002d "minus" "-")          ;U+002D HYPHEN-MINUS
+(define-keysym #x002e "period" ".")         ;U+002E FULL STOP
+(define-keysym #x002f "slash" "/")          ;U+002F SOLIDUS
 (define-keysym #x0030 "0")              ;U+0030 DIGIT ZERO
 (define-keysym #x0031 "1")              ;U+0031 DIGIT ONE
 (define-keysym #x0032 "2")              ;U+0032 DIGIT TWO
@@ -432,13 +333,13 @@
 (define-keysym #x0037 "7")              ;U+0037 DIGIT SEVEN
 (define-keysym #x0038 "8")              ;U+0038 DIGIT EIGHT
 (define-keysym #x0039 "9")              ;U+0039 DIGIT NINE
-(define-keysym #x003a "colon")          ;U+003A COLON
-(define-keysym #x003b "semicolon")      ;U+003B SEMICOLON
-(define-keysym #x003c "less")           ;U+003C LESS-THAN SIGN
-(define-keysym #x003d "equal")          ;U+003D EQUALS SIGN
-(define-keysym #x003e "greater")        ;U+003E GREATER-THAN SIGN
-(define-keysym #x003f "question")       ;U+003F QUESTION MARK
-(define-keysym #x0040 "at")             ;U+0040 COMMERCIAL AT
+(define-keysym #x003a "colon" ":")          ;U+003A COLON
+(define-keysym #x003b "semicolon" ";")      ;U+003B SEMICOLON
+(define-keysym #x003c "less" "<")           ;U+003C LESS-THAN SIGN
+(define-keysym #x003d "equal" "=")          ;U+003D EQUALS SIGN
+(define-keysym #x003e "greater" ">")        ;U+003E GREATER-THAN SIGN
+(define-keysym #x003f "question" "?")       ;U+003F QUESTION MARK
+(define-keysym #x0040 "at" "@")             ;U+0040 COMMERCIAL AT
 (define-keysym #x0041 "A")              ;U+0041 LATIN CAPITAL LETTER A
 (define-keysym #x0042 "B")              ;U+0042 LATIN CAPITAL LETTER B
 (define-keysym #x0043 "C")              ;U+0043 LATIN CAPITAL LETTER C
@@ -465,13 +366,13 @@
 (define-keysym #x0058 "X")              ;U+0058 LATIN CAPITAL LETTER X
 (define-keysym #x0059 "Y")              ;U+0059 LATIN CAPITAL LETTER Y
 (define-keysym #x005a "Z")              ;U+005A LATIN CAPITAL LETTER Z
-(define-keysym #x005b "bracketleft")    ;U+005B LEFT SQUARE BRACKET
-(define-keysym #x005c "backslash")      ;U+005C REVERSE SOLIDUS
-(define-keysym #x005d "bracketright")   ;U+005D RIGHT SQUARE BRACKET
-(define-keysym #x005e "asciicircum")    ;U+005E CIRCUMFLEX ACCENT
-(define-keysym #x005f "underscore")     ;U+005F LOW LINE
-(define-keysym #x0060 "grave")          ;U+0060 GRAVE ACCENT
-(define-keysym #x0060 "quoteleft")      ;deprecated
+(define-keysym #x005b "bracketleft" "[")    ;U+005B LEFT SQUARE BRACKET
+(define-keysym #x005c "backslash" "\\")      ;U+005C REVERSE SOLIDUS
+(define-keysym #x005d "bracketright" "]")   ;U+005D RIGHT SQUARE BRACKET
+(define-keysym #x005e "asciicircum" "^")    ;U+005E CIRCUMFLEX ACCENT
+(define-keysym #x005f "underscore" "_")     ;U+005F LOW LINE
+(define-keysym #x0060 "grave" "`")          ;U+0060 GRAVE ACCENT
+(define-keysym #x0060 "quoteleft" "`")      ;deprecated
 (define-keysym #x0061 "a")              ;U+0061 LATIN SMALL LETTER A
 (define-keysym #x0062 "b")              ;U+0062 LATIN SMALL LETTER B
 (define-keysym #x0063 "c")              ;U+0063 LATIN SMALL LETTER C
@@ -498,10 +399,10 @@
 (define-keysym #x0078 "x")              ;U+0078 LATIN SMALL LETTER X
 (define-keysym #x0079 "y")              ;U+0079 LATIN SMALL LETTER Y
 (define-keysym #x007a "z")              ;U+007A LATIN SMALL LETTER Z
-(define-keysym #x007b "braceleft")      ;U+007B LEFT CURLY BRACKET
-(define-keysym #x007c "bar")            ;U+007C VERTICAL LINE
-(define-keysym #x007d "braceright")     ;U+007D RIGHT CURLY BRACKET
-(define-keysym #x007e "asciitilde")     ;U+007E TILDE
+(define-keysym #x007b "braceleft" "{")      ;U+007B LEFT CURLY BRACKET
+(define-keysym #x007c "bar" "|")            ;U+007C VERTICAL LINE
+(define-keysym #x007d "braceright" "}")     ;U+007D RIGHT CURLY BRACKET
+(define-keysym #x007e "asciitilde" "~")     ;U+007E TILDE
 (define-keysym #x00a0 "nobreakspace")   ;U+00A0 NO-BREAK SPACE
 (define-keysym #x00a1 "exclamdown")  ;U+00A1 INVERTED EXCLAMATION MARK
 (define-keysym #x00a2 "cent")           ;U+00A2 CENT SIGN
@@ -978,46 +879,46 @@
 (define-keysym #x06ba "Serbian_NJE")    ;deprecated
 (define-keysym #x06bb "Serbian_TSHE") ;U+040B CYRILLIC CAPITAL LETTER TSHE
 (define-keysym #x06bc "Macedonia_KJE") ;U+040C CYRILLIC CAPITAL LETTER KJE
-(define-keysym #x06bd "Ukrainian_GHE_WITH_UPTURN") ;U+0490 CYRILLIC CAPITAL LETTER GHE WITH UPTURN
+(define-keysym #x06bd "backslash") ;U+0490 CYRILLIC CAPITAL LETTER GHE WITH UPTURN
 (define-keysym #x06be "Byelorussian_SHORTU") ;U+040E CYRILLIC CAPITAL LETTER SHORT U
 (define-keysym #x06bf "Cyrillic_DZHE") ;U+040F CYRILLIC CAPITAL LETTER DZHE
 (define-keysym #x06bf "Serbian_DZE")    ;deprecated
-(define-keysym #x06c0 "Cyrillic_yu")  ;U+044E CYRILLIC SMALL LETTER YU
-(define-keysym #x06c1 "Cyrillic_a")    ;U+0430 CYRILLIC SMALL LETTER A
-(define-keysym #x06c2 "Cyrillic_be")  ;U+0431 CYRILLIC SMALL LETTER BE
-(define-keysym #x06c3 "Cyrillic_tse") ;U+0446 CYRILLIC SMALL LETTER TSE
-(define-keysym #x06c4 "Cyrillic_de")  ;U+0434 CYRILLIC SMALL LETTER DE
-(define-keysym #x06c5 "Cyrillic_ie")  ;U+0435 CYRILLIC SMALL LETTER IE
-(define-keysym #x06c6 "Cyrillic_ef")  ;U+0444 CYRILLIC SMALL LETTER EF
-(define-keysym #x06c7 "Cyrillic_ghe") ;U+0433 CYRILLIC SMALL LETTER GHE
-(define-keysym #x06c8 "Cyrillic_ha")  ;U+0445 CYRILLIC SMALL LETTER HA
-(define-keysym #x06c9 "Cyrillic_i")    ;U+0438 CYRILLIC SMALL LETTER I
-(define-keysym #x06ca "Cyrillic_shorti") ;U+0439 CYRILLIC SMALL LETTER SHORT I
-(define-keysym #x06cb "Cyrillic_ka")  ;U+043A CYRILLIC SMALL LETTER KA
-(define-keysym #x06cc "Cyrillic_el")  ;U+043B CYRILLIC SMALL LETTER EL
-(define-keysym #x06cd "Cyrillic_em")  ;U+043C CYRILLIC SMALL LETTER EM
-(define-keysym #x06ce "Cyrillic_en")  ;U+043D CYRILLIC SMALL LETTER EN
-(define-keysym #x06cf "Cyrillic_o")    ;U+043E CYRILLIC SMALL LETTER O
-(define-keysym #x06d0 "Cyrillic_pe")  ;U+043F CYRILLIC SMALL LETTER PE
-(define-keysym #x06d1 "Cyrillic_ya")  ;U+044F CYRILLIC SMALL LETTER YA
-(define-keysym #x06d2 "Cyrillic_er")  ;U+0440 CYRILLIC SMALL LETTER ER
-(define-keysym #x06d3 "Cyrillic_es")  ;U+0441 CYRILLIC SMALL LETTER ES
-(define-keysym #x06d4 "Cyrillic_te")  ;U+0442 CYRILLIC SMALL LETTER TE
-(define-keysym #x06d5 "Cyrillic_u")    ;U+0443 CYRILLIC SMALL LETTER U
-(define-keysym #x06d6 "Cyrillic_zhe") ;U+0436 CYRILLIC SMALL LETTER ZHE
-(define-keysym #x06d7 "Cyrillic_ve")  ;U+0432 CYRILLIC SMALL LETTER VE
+;; (define-keysym #x06c0 ".")  ;U+044E CYRILLIC SMALL LETTER YU
+(define-keysym #x06c1 "f")    ;U+0430 CYRILLIC SMALL LETTER A
+;; (define-keysym #x06c2 ",")  ;U+0431 CYRILLIC SMALL LETTER BE
+(define-keysym #x06c3 "w") ;U+0446 CYRILLIC SMALL LETTER TSE
+(define-keysym #x06c4 "l")  ;U+0434 CYRILLIC SMALL LETTER DE
+(define-keysym #x06c5 "t")  ;U+0435 CYRILLIC SMALL LETTER IE
+(define-keysym #x06c6 "a")  ;U+0444 CYRILLIC SMALL LETTER EF
+(define-keysym #x06c7 "u") ;U+0433 CYRILLIC SMALL LETTER GHE
+;; (define-keysym #x06c8 "[")  ;U+0445 CYRILLIC SMALL LETTER HA
+;; (define-keysym #x06c9 "b")    ;U+0438 CYRILLIC SMALL LETTER I
+;; (define-keysym #x06ca "q") ;U+0439 CYRILLIC SMALL LETTER SHORT I
+;; (define-keysym #x06cb "r")  ;U+043A CYRILLIC SMALL LETTER KA
+;; (define-keysym #x06cc "k")  ;U+043B CYRILLIC SMALL LETTER EL
+;; (define-keysym #x06cd "v")  ;U+043C CYRILLIC SMALL LETTER EM
+;; (define-keysym #x06ce "y")  ;U+043D CYRILLIC SMALL LETTER EN
+;; (define-keysym #x06cf "j")    ;U+043E CYRILLIC SMALL LETTER O
+;; (define-keysym #x06d0 "g")  ;U+043F CYRILLIC SMALL LETTER PE
+;; (define-keysym #x06d1 "z")  ;U+044F CYRILLIC SMALL LETTER YA
+;; (define-keysym #x06d2 "h")  ;U+0440 CYRILLIC SMALL LETTER ER
+;; (define-keysym #x06d3 "c")  ;U+0441 CYRILLIC SMALL LETTER ES
+;; (define-keysym #x06d4 "n")  ;U+0442 CYRILLIC SMALL LETTER TE
+;; (define-keysym #x06d5 "e")    ;U+0443 CYRILLIC SMALL LETTER U
+;; (define-keysym #x06d6 ";") ;U+0436 CYRILLIC SMALL LETTER ZHE
+;; (define-keysym #x06d7 "d")  ;U+0432 CYRILLIC SMALL LETTER VE
 (define-keysym #x06d8 "Cyrillic_softsign") ;U+044C CYRILLIC SMALL LETTER SOFT SIGN
 (define-keysym #x06d9 "Cyrillic_yeru") ;U+044B CYRILLIC SMALL LETTER YERU
-(define-keysym #x06da "Cyrillic_ze")  ;U+0437 CYRILLIC SMALL LETTER ZE
-(define-keysym #x06db "Cyrillic_sha") ;U+0448 CYRILLIC SMALL LETTER SHA
+(define-keysym #x06da "p")  ;U+0437 CYRILLIC SMALL LETTER ZE
+(define-keysym #x06db "i") ;U+0448 CYRILLIC SMALL LETTER SHA
 (define-keysym #x06dc "Cyrillic_e")    ;U+044D CYRILLIC SMALL LETTER E
-(define-keysym #x06dd "Cyrillic_shcha") ;U+0449 CYRILLIC SMALL LETTER SHCHA
-(define-keysym #x06de "Cyrillic_che") ;U+0447 CYRILLIC SMALL LETTER CHE
+(define-keysym #x06dd "o") ;U+0449 CYRILLIC SMALL LETTER SHCHA
+(define-keysym #x06de "x") ;U+0447 CYRILLIC SMALL LETTER CHE
 (define-keysym #x06df "Cyrillic_hardsign") ;U+044A CYRILLIC SMALL LETTER HARD SIGN
 (define-keysym #x06e0 "Cyrillic_YU") ;U+042E CYRILLIC CAPITAL LETTER YU
 (define-keysym #x06e1 "Cyrillic_A")  ;U+0410 CYRILLIC CAPITAL LETTER A
 (define-keysym #x06e2 "Cyrillic_BE") ;U+0411 CYRILLIC CAPITAL LETTER BE
-(define-keysym #x06e3 "Cyrillic_TSE") ;U+0426 CYRILLIC CAPITAL LETTER TSE
+(define-keysym #x06e3 "W") ;U+0426 CYRILLIC CAPITAL LETTER TSE
 (define-keysym #x06e4 "Cyrillic_DE") ;U+0414 CYRILLIC CAPITAL LETTER DE
 (define-keysym #x06e5 "Cyrillic_IE") ;U+0415 CYRILLIC CAPITAL LETTER IE
 (define-keysym #x06e6 "Cyrillic_EF") ;U+0424 CYRILLIC CAPITAL LETTER EF
@@ -1025,7 +926,7 @@
 (define-keysym #x06e8 "Cyrillic_HA") ;U+0425 CYRILLIC CAPITAL LETTER HA
 (define-keysym #x06e9 "Cyrillic_I")  ;U+0418 CYRILLIC CAPITAL LETTER I
 (define-keysym #x06ea "Cyrillic_SHORTI") ;U+0419 CYRILLIC CAPITAL LETTER SHORT I
-(define-keysym #x06eb "Cyrillic_KA") ;U+041A CYRILLIC CAPITAL LETTER KA
+(define-keysym #x06eb "R") ;U+041A CYRILLIC CAPITAL LETTER KA
 (define-keysym #x06ec "Cyrillic_EL") ;U+041B CYRILLIC CAPITAL LETTER EL
 (define-keysym #x06ed "Cyrillic_EM") ;U+041C CYRILLIC CAPITAL LETTER EM
 (define-keysym #x06ee "Cyrillic_EN") ;U+041D CYRILLIC CAPITAL LETTER EN
@@ -1035,7 +936,7 @@
 (define-keysym #x06f2 "Cyrillic_ER") ;U+0420 CYRILLIC CAPITAL LETTER ER
 (define-keysym #x06f3 "Cyrillic_ES") ;U+0421 CYRILLIC CAPITAL LETTER ES
 (define-keysym #x06f4 "Cyrillic_TE") ;U+0422 CYRILLIC CAPITAL LETTER TE
-(define-keysym #x06f5 "Cyrillic_U")  ;U+0423 CYRILLIC CAPITAL LETTER U
+(define-keysym #x06f5 "e")  ;U+0423 CYRILLIC CAPITAL LETTER U
 (define-keysym #x06f6 "Cyrillic_ZHE") ;U+0416 CYRILLIC CAPITAL LETTER ZHE
 (define-keysym #x06f7 "Cyrillic_VE") ;U+0412 CYRILLIC CAPITAL LETTER VE
 (define-keysym #x06f8 "Cyrillic_SOFTSIGN") ;U+042C CYRILLIC CAPITAL LETTER SOFT SIGN

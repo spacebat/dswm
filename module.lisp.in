@@ -70,21 +70,22 @@
 	   (t (module-p (cdr dir-list) name)))))
     (module-p (reverse *list-modules-dir*) name)))
 
-
-(defcommand add-modules-dir (dir) ((:string "Input directory name: "))
+(defun add-modules-dir (dir)
   ;; TODO: define dswm type pathname with autocomplete and automatic
   ;; directories creation
     "Add the location of the contrib modules"
     (add-to-list *list-modules-dir* (string-as-directory dir)))
 
-(defcommand load-module (name) ((:module "Input module name: "))
-  "Loads the contributed module with the given NAME."
+(defcommand use-module (name) ((:module "Input module name: "))
+  "Download (if needed), install(if needed) and use the contributed module with the given NAME."
   ;; FIXME: This should use ASDF in the future. And maybe there should
   ;; be an extra dswm-contrib repository.
   (when name
     (let ((module (find-module name)))
       (when module
           (load module)))))
+
+(defcommand-alias use-module load-module)
 
 (defcommand list-modules () ()
   (let ((list nil))
@@ -94,5 +95,12 @@
 	      (message (format nil "~a" list))
 	    (message "No modules found"))))
 
+(defcommand list-remote-modules () ()
+  )
+
+(defcommand list-installed-modules () ()
+  )
+
+(defcommand-alias list-local-modules list-installed-modules)
 
 ;; End of file

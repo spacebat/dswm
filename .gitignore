@@ -25,7 +25,5 @@ modules/*#*
 dswm.desktop
 dswm.info
 dswm.texi
-modules/swank.lisp
 dswm
-Makefile
 
