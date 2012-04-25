@@ -342,7 +342,8 @@
 (define-keysym #x0040 "at" "@")             ;U+0040 COMMERCIAL AT
 (define-keysym #x0041 "A")              ;U+0041 LATIN CAPITAL LETTER A
 (define-keysym #x0042 "B")              ;U+0042 LATIN CAPITAL LETTER B
-(define-keysym #x0043 "C")              ;U+0043 LATIN CAPITAL LETTER C
+(define-keysym #x0043 "C"
+  )              ;U+0043 LATIN CAPITAL LETTER C
 (define-keysym #x0044 "D")              ;U+0044 LATIN CAPITAL LETTER D
 (define-keysym #x0045 "E")              ;U+0045 LATIN CAPITAL LETTER E
 (define-keysym #x0046 "F")              ;U+0046 LATIN CAPITAL LETTER F
@@ -884,13 +885,13 @@
 (define-keysym #x06bf "Cyrillic_DZHE") ;U+040F CYRILLIC CAPITAL LETTER DZHE
 (define-keysym #x06bf "Serbian_DZE")    ;deprecated
 ;; (define-keysym #x06c0 ".")  ;U+044E CYRILLIC SMALL LETTER YU
-(define-keysym #x06c1 "f")    ;U+0430 CYRILLIC SMALL LETTER A
+;; (define-keysym #x06c1 "f")    ;U+0430 CYRILLIC SMALL LETTER A
 ;; (define-keysym #x06c2 ",")  ;U+0431 CYRILLIC SMALL LETTER BE
-(define-keysym #x06c3 "w") ;U+0446 CYRILLIC SMALL LETTER TSE
-(define-keysym #x06c4 "l")  ;U+0434 CYRILLIC SMALL LETTER DE
-(define-keysym #x06c5 "t")  ;U+0435 CYRILLIC SMALL LETTER IE
-(define-keysym #x06c6 "a")  ;U+0444 CYRILLIC SMALL LETTER EF
-(define-keysym #x06c7 "u") ;U+0433 CYRILLIC SMALL LETTER GHE
+;; (define-keysym #x06c3 "w") ;U+0446 CYRILLIC SMALL LETTER TSE
+;; (define-keysym #x06c4 "l")  ;U+0434 CYRILLIC SMALL LETTER DE
+;; (define-keysym #x06c5 "t")  ;U+0435 CYRILLIC SMALL LETTER IE
+;; (define-keysym #x06c6 "a")  ;U+0444 CYRILLIC SMALL LETTER EF
+;; (define-keysym #x06c7 "u") ;U+0433 CYRILLIC SMALL LETTER GHE
 ;; (define-keysym #x06c8 "[")  ;U+0445 CYRILLIC SMALL LETTER HA
 ;; (define-keysym #x06c9 "b")    ;U+0438 CYRILLIC SMALL LETTER I
 ;; (define-keysym #x06ca "q") ;U+0439 CYRILLIC SMALL LETTER SHORT I
@@ -909,16 +910,16 @@
 ;; (define-keysym #x06d7 "d")  ;U+0432 CYRILLIC SMALL LETTER VE
 (define-keysym #x06d8 "Cyrillic_softsign") ;U+044C CYRILLIC SMALL LETTER SOFT SIGN
 (define-keysym #x06d9 "Cyrillic_yeru") ;U+044B CYRILLIC SMALL LETTER YERU
-(define-keysym #x06da "p")  ;U+0437 CYRILLIC SMALL LETTER ZE
-(define-keysym #x06db "i") ;U+0448 CYRILLIC SMALL LETTER SHA
+(define-keysym #x06da "Cyrillic_ze")  ;U+0437 CYRILLIC SMALL LETTER ZE
+(define-keysym #x06db "Cyrillic_sha") ;U+0448 CYRILLIC SMALL LETTER SHA
 (define-keysym #x06dc "Cyrillic_e")    ;U+044D CYRILLIC SMALL LETTER E
-(define-keysym #x06dd "o") ;U+0449 CYRILLIC SMALL LETTER SHCHA
-(define-keysym #x06de "x") ;U+0447 CYRILLIC SMALL LETTER CHE
+(define-keysym #x06dd "Cyrillic_shcha") ;U+0449 CYRILLIC SMALL LETTER SHCHA
+(define-keysym #x06de "Cyrillic_che") ;U+0447 CYRILLIC SMALL LETTER CHE
 (define-keysym #x06df "Cyrillic_hardsign") ;U+044A CYRILLIC SMALL LETTER HARD SIGN
 (define-keysym #x06e0 "Cyrillic_YU") ;U+042E CYRILLIC CAPITAL LETTER YU
 (define-keysym #x06e1 "Cyrillic_A")  ;U+0410 CYRILLIC CAPITAL LETTER A
 (define-keysym #x06e2 "Cyrillic_BE") ;U+0411 CYRILLIC CAPITAL LETTER BE
-(define-keysym #x06e3 "W") ;U+0426 CYRILLIC CAPITAL LETTER TSE
+(define-keysym #x06e3 "Cyrillic_TSE") ;U+0426 CYRILLIC CAPITAL LETTER TSE
 (define-keysym #x06e4 "Cyrillic_DE") ;U+0414 CYRILLIC CAPITAL LETTER DE
 (define-keysym #x06e5 "Cyrillic_IE") ;U+0415 CYRILLIC CAPITAL LETTER IE
 (define-keysym #x06e6 "Cyrillic_EF") ;U+0424 CYRILLIC CAPITAL LETTER EF
@@ -926,7 +927,7 @@
 (define-keysym #x06e8 "Cyrillic_HA") ;U+0425 CYRILLIC CAPITAL LETTER HA
 (define-keysym #x06e9 "Cyrillic_I")  ;U+0418 CYRILLIC CAPITAL LETTER I
 (define-keysym #x06ea "Cyrillic_SHORTI") ;U+0419 CYRILLIC CAPITAL LETTER SHORT I
-(define-keysym #x06eb "R") ;U+041A CYRILLIC CAPITAL LETTER KA
+(define-keysym #x06eb "Cyrillic_KA") ;U+041A CYRILLIC CAPITAL LETTER KA
 (define-keysym #x06ec "Cyrillic_EL") ;U+041B CYRILLIC CAPITAL LETTER EL
 (define-keysym #x06ed "Cyrillic_EM") ;U+041C CYRILLIC CAPITAL LETTER EM
 (define-keysym #x06ee "Cyrillic_EN") ;U+041D CYRILLIC CAPITAL LETTER EN
@@ -936,7 +937,7 @@
 (define-keysym #x06f2 "Cyrillic_ER") ;U+0420 CYRILLIC CAPITAL LETTER ER
 (define-keysym #x06f3 "Cyrillic_ES") ;U+0421 CYRILLIC CAPITAL LETTER ES
 (define-keysym #x06f4 "Cyrillic_TE") ;U+0422 CYRILLIC CAPITAL LETTER TE
-(define-keysym #x06f5 "e")  ;U+0423 CYRILLIC CAPITAL LETTER U
+(define-keysym #x06f5 "Cyrillic_U")  ;U+0423 CYRILLIC CAPITAL LETTER U
 (define-keysym #x06f6 "Cyrillic_ZHE") ;U+0416 CYRILLIC CAPITAL LETTER ZHE
 (define-keysym #x06f7 "Cyrillic_VE") ;U+0412 CYRILLIC CAPITAL LETTER VE
 (define-keysym #x06f8 "Cyrillic_SOFTSIGN") ;U+042C CYRILLIC CAPITAL LETTER SOFT SIGN

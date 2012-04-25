@@ -1044,6 +1044,9 @@ raise/map denial messages will be seen.")
 (defvar *resize-hides-windows* nil
   "Set to T to hide windows during interactive resize")
 
+(defvar *startup-only-code* nil
+  "Set code, which run only on startup")
+
 (defun deny-request-p (window deny-list)
   (or (eq deny-list t)
       (and

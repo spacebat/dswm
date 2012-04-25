@@ -77,7 +77,7 @@ from most specific groups to most general groups.")
              m))))
 
 (fill-keymap *top-map*
-;;  (kbd "M-`") "scratchpad"
+  (kbd "M-`") "scratchpad"
   *escape-key* '*root-map*)
 
 (fill-keymap *root-map*
